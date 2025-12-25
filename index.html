@@ -1,0 +1,849 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Liar Game (Local)</title>
+  <style>
+    :root {
+      --bg: #f7e9e5;
+      --card: #ffffff;
+      --accent: #7c3aed;
+      --muted: #4b5563;
+      --text: #111827;
+      --border: #e5e7eb;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at 20% 20%, #fef2f2, #f7e9e5 45%, #f5e6e8);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      width: 100%;
+      max-width: clamp(520px, 92vw, 1200px);
+      padding: 56px 40px 72px;
+      margin: 0 auto;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-weight: 800;
+      text-align: center;
+      letter-spacing: 0.2px;
+      font-size: 32px;
+    }
+    p.lead {
+      margin: 0 0 22px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 16px;
+    }
+    .grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .card {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 38px;
+      box-shadow: 0 28px 80px rgba(17, 24, 39, 0.12);
+    }
+    h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text);
+      font-size: 17px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 20px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--text);
+      font-size: 20px;
+    }
+    select { appearance: none; }
+    button {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.08s ease, box-shadow 0.12s ease;
+      border: none;
+      box-shadow: 0 10px 25px rgba(124, 58, 237, 0.25);
+    }
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; transform: none; }
+    .inline {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .inline input { flex: 1; min-width: 160px; }
+    .ghost {
+      background: #f3f4f6;
+      color: var(--text);
+      box-shadow: none;
+      border: 1px solid var(--border);
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 18px;
+      border-radius: 999px;
+      background: #f3f4f6;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: #f3f4f6;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 15px;
+      white-space: nowrap;
+    }
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+    .category-btn {
+      background: #f8fafc;
+      color: var(--text);
+      box-shadow: none;
+      border: 1px solid var(--border);
+      font-weight: 800;
+      font-size: 16px;
+      padding: 16px 18px;
+    }
+    .category-btn.active {
+      border-color: var(--accent);
+      background: #f3e8ff;
+      color: #4c1d95;
+      box-shadow: 0 10px 22px rgba(124, 58, 237, 0.18);
+    }
+    .role-card {
+      border-radius: 20px;
+      padding: 38px;
+      background: #f9fafb;
+      border: 1px dashed var(--border);
+      text-align: center;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 16px;
+    }
+    .role-card strong {
+      display: block;
+      font-size: 34px;
+      margin: 0;
+    }
+    .subline {
+      color: var(--muted);
+      font-size: 19px;
+      font-weight: 800;
+      display: block;
+    }
+    #turnNote {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .warning { color: var(--danger); font-weight: 800; }
+    .muted { color: var(--muted); }
+    .divider { height: 1px; background: var(--border); margin: 14px 0; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .screen.hidden { display: none; }
+    .screen { width: 100%; }
+    .stack > * + * { margin-top: 12px; }
+    .center { text-align: center; }
+    .inline.spread { justify-content: space-between; }
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+    .modal.hidden { display: none; }
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.35);
+      backdrop-filter: blur(2px);
+    }
+    .modal-panel {
+      position: relative;
+      background: #fff;
+      color: var(--text);
+      border-radius: 18px;
+      padding: 22px;
+      max-width: 520px;
+      width: calc(100% - 32px);
+      box-shadow: 0 20px 60px rgba(17, 24, 39, 0.25);
+      z-index: 1;
+    }
+    .rules-list {
+      padding-left: 18px;
+      color: #111827;
+      line-height: 1.5;
+      margin: 12px 0 0;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+    @media (max-width: 900px) {
+      .container { padding: 32px 20px 48px; }
+      .card { padding: 26px; border-radius: 20px; }
+      h1 { font-size: 28px; }
+      p.lead { font-size: 15px; }
+      .category-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+      .inline.spread { flex-wrap: wrap; gap: 10px; }
+      .pill { width: 100%; justify-content: center; }
+    }
+    @media (max-width: 640px) {
+      body { align-items: flex-start; }
+      .container { padding: 26px 14px 38px; }
+      .card { padding: 22px; border-radius: 18px; }
+      h1 { font-size: 26px; }
+      p.lead { font-size: 14px; }
+      input, select, button { font-size: 16px; padding: 14px; }
+      .role-card { min-height: 220px; padding: 24px; }
+      .role-card strong { font-size: 26px; }
+      #turnNote { font-size: 16px; }
+      .inline { flex-direction: column; align-items: stretch; }
+      .inline.spread { align-items: stretch; }
+      .topbar { flex-direction: column; align-items: center; gap: 8px; }
+      .pill { width: 100%; justify-content: center; }
+      .category-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+      button { width: 100%; }
+    }
+    @media (min-width: 1200px) {
+      h1 { font-size: 34px; }
+      p.lead { font-size: 17px; }
+      .card { padding: 38px; }
+      input, select, button { font-size: 20px; padding: 20px; }
+      .role-card { min-height: 300px; padding: 38px; }
+      .role-card strong { font-size: 34px; }
+      #turnNote { font-size: 19px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div>
+        <h1>Guess the Liar</h1>
+        <p class="lead">Simple pass-and-play for 3–20 players. One liar, one secret word.</p>
+      </div>
+      <button id="rulesBtn" class="ghost" style="width:auto; padding:10px 14px;">Rules</button>
+    </div>
+
+    <section id="setupScreen" class="screen">
+      <div class="card">
+        <div class="stack">
+          <div>
+            <h3>Setup</h3>
+            <p class="muted" style="margin:6px 0 0;">Pick players and a category, then start.</p>
+          </div>
+          <div class="stack">
+            <label for="playerCount">Number of players (3–20)</label>
+            <div class="inline">
+              <input id="playerCount" type="number" min="3" max="20" value="6" />
+              <span class="badge">Liar assigned randomly</span>
+            </div>
+          </div>
+          <div class="stack">
+            <div class="inline spread" style="align-items:center;">
+              <label for="categorySelect">Category</label>
+              <button id="translateCatsBtn" class="ghost" style="width:auto;">中 / EN</button>
+            </div>
+            <div class="category-grid" id="categoryGrid"></div>
+            <select id="categorySelect" class="sr-only">
+              <option value="random">Random category</option>
+              <option value="foods">Foods</option>
+              <option value="fruits">Fruits</option>
+              <option value="sports">Sports</option>
+              <option value="music">Music</option>
+              <option value="highSchoolSubjects">High school subjects</option>
+              <option value="geography">Geography</option>
+              <option value="jobs">Jobs</option>
+              <option value="history">History</option>
+              <option value="humanBody">Human body</option>
+              <option value="household">Household items</option>
+              <option value="nature">Nature</option>
+              <option value="animals">Animals</option>
+              <option value="canada">Canada</option>
+              <option value="china">China</option>
+            </select>
+          </div>
+          <button id="startBtn" style="font-size:18px; padding:16px;">Start / New Word</button>
+          <p class="muted center" style="margin:0;">Pass the device and reveal roles one at a time.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="dealScreen" class="screen hidden">
+      <div class="card">
+        <div class="inline spread" style="align-items:center; gap:8px;">
+          <button id="backBtn" class="ghost" style="width:auto;">← Setup</button>
+          <div class="pill" id="categoryPill">Category: –</div>
+          <div class="inline" style="gap:8px; flex-wrap:nowrap;">
+            <button id="translateBtn" class="ghost" style="width:auto;">中 / EN</button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <h3>Deal roles</h3>
+        <p class="muted" id="turnNote">Press start to pick a word.</p>
+        <div style="height: 8px;"></div>
+        <div class="role-card" id="roleCard">
+          <strong>Waiting…</strong>
+          <span class="muted">Tap “Show role” to begin.</span>
+        </div>
+        <div style="height: 12px;"></div>
+        <div class="inline">
+          <button id="revealBtn">Show role</button>
+          <button id="nextBtn" class="ghost">Hide / Next player</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="rulesModal" class="modal hidden" aria-modal="true" role="dialog">
+    <div class="modal-backdrop" id="rulesBackdrop"></div>
+    <div class="modal-panel">
+      <div class="inline spread" style="align-items:center;">
+        <h3 style="margin:0;">Rules</h3>
+        <button id="closeRules" class="ghost" style="width:auto;">✕</button>
+      </div>
+      <ol class="rules-list">
+        <li>Everyone gets the secret word except one liar.</li>
+        <li>Take turns giving short hints about the word.</li>
+        <li>The liar listens, bluffs, and tries to blend in.</li>
+        <li>After a few rounds, discuss and vote who the liar is.</li>
+        <li>If the liar is caught, the group wins; if not, the liar wins — but the liar can also steal the win by guessing the word after votes.</li>
+      </ol>
+    </div>
+  </div>
+
+  <script>
+    const categories = {
+      foods: [
+        "pizza", "burger", "pasta", "sushi", "taco", "burrito", "ramen", "curry", "stew", "fried rice",
+        "paella", "lasagna", "sandwich", "salad", "omelette", "pancakes", "waffles", "bagel", "doughnut", "quiche",
+        "soup", "chowder", "risotto", "meatballs", "roast chicken", "steak", "barbecue ribs", "falafel", "hummus", "shawarma",
+        "kebab", "gyro", "pita", "ceviche", "nachos", "enchilada", "quesadilla", "dumplings", "spring rolls", "bibimbap",
+        "kimchi", "hotpot", "pho", "pad thai", "green curry", "butter chicken", "tandoori", "samosa", "pav bhaji", "pierogi",
+        "gnocchi", "fajitas", "bruschetta", "ratatouille", "gazpacho", "poke bowl", "miso soup", "clam bake", "mac and cheese", "fried chicken"
+      ],
+      fruits: [
+        "apple", "banana", "orange", "mango", "pineapple", "strawberry", "blueberry", "raspberry", "blackberry", "cherry",
+        "grape", "watermelon", "cantaloupe", "honeydew", "kiwi", "papaya", "guava", "lychee", "peach", "plum",
+        "apricot", "nectarine", "pear", "pomegranate", "grapefruit", "tangerine", "clementine", "lime", "lemon", "coconut",
+        "fig", "date", "persimmon", "dragonfruit", "starfruit", "passionfruit", "jackfruit", "durian", "cranberry", "boysenberry",
+        "currant", "mulberry", "avocado", "olive", "tomato", "gooseberry", "elderberry", "sapodilla", "longan", "rambutan",
+        "loquat", "soursop", "plantain", "mandarin", "blood orange", "tangelo", "ugli fruit", "quince", "sugar apple", "carambola"
+      ],
+      sports: [
+        "soccer", "basketball", "baseball", "softball", "football", "rugby", "cricket", "tennis", "table tennis", "badminton",
+        "volleyball", "beach volleyball", "golf", "hockey", "ice hockey", "field hockey", "lacrosse", "handball", "water polo", "swimming",
+        "diving", "surfing", "sailing", "rowing", "kayaking", "canoeing", "cycling", "mountain biking", "bmx", "track and field",
+        "marathon", "triathlon", "wrestling", "boxing", "kickboxing", "martial arts", "judo", "karate", "taekwondo", "fencing",
+        "archery", "shooting", "skateboarding", "snowboarding", "skiing", "cross-country skiing", "biathlon", "curling", "figure skating", "speed skating",
+        "gymnastics", "cheerleading", "bowling", "darts", "billiards", "squash", "racquetball", "pickleball", "ultimate frisbee", "disc golf"
+      ],
+      music: [
+        "guitar", "piano", "violin", "cello", "viola", "double bass", "flute", "clarinet", "saxophone", "trumpet",
+        "trombone", "french horn", "tuba", "drums", "percussion", "xylophone", "marimba", "ukulele", "banjo", "mandolin",
+        "harp", "accordion", "harmonica", "synthesizer", "organ", "bass guitar", "microphone", "choir", "orchestra", "band",
+        "duet", "solo", "chorus", "verse", "bridge", "hook", "melody", "harmony", "rhythm", "tempo",
+        "beat", "scale", "chord", "arpeggio", "riff", "groove", "hip hop", "rock", "pop", "jazz",
+        "blues", "country", "folk", "reggae", "salsa", "merengue", "bachata", "techno", "house", "classical"
+      ],
+      highSchoolSubjects: [
+        "algebra", "geometry", "trigonometry", "calculus", "statistics", "precalculus", "algebra 2", "biology", "chemistry", "physics",
+        "earth science", "environmental science", "anatomy", "physiology", "computer science", "programming", "robotics", "engineering", "astronomy", "economics",
+        "microeconomics", "macroeconomics", "world history", "us history", "government", "civics", "psychology", "sociology", "philosophy", "ethics",
+        "english", "literature", "writing", "grammar", "creative writing", "journalism", "public speaking", "debate", "spanish", "french",
+        "german", "chinese", "latin", "art", "drawing", "painting", "sculpture", "music", "choir", "band",
+        "orchestra", "theater", "drama", "health", "physical education", "business", "accounting", "marketing", "entrepreneurship", "finance",
+        "ap calculus", "ap biology", "ap chemistry", "ap physics", "ap statistics", "ap us history", "ap world history", "ap government", "ap psychology", "ap computer science"
+      ],
+      geography: [
+        "asia", "europe", "africa", "north america", "south america", "australia", "antarctica", "pacific ocean", "atlantic ocean", "indian ocean",
+        "arctic ocean", "mediterranean sea", "caribbean sea", "gulf of mexico", "sahara desert", "gobi desert", "amazon river", "nile river", "yangtze river", "mississippi river",
+        "mount everest", "andes mountains", "himalayas", "rocky mountains", "alps", "ural mountains", "great lakes", "lake baikal", "lake victoria", "grand canyon",
+        "great barrier reef", "ganges river", "thames river", "danube river", "rhine river", "serengeti", "savanna", "taiga", "tundra", "rainforest",
+        "steppe", "delta", "isthmus", "peninsula", "archipelago", "island", "strait", "fjord", "canyon", "plateau",
+        "valley", "volcano", "glacier", "atoll", "lagoon", "monsoon", "typhoon", "equator", "prime meridian", "tropic of cancer", "tropic of capricorn", "cape"
+      ],
+      jobs: [
+        "doctor", "nurse", "surgeon", "paramedic", "pharmacist", "dentist", "veterinarian", "teacher", "professor", "principal",
+        "software engineer", "product manager", "designer", "data scientist", "data analyst", "devops engineer", "systems administrator", "electrician", "plumber", "carpenter",
+        "mechanic", "civil engineer", "architect", "lawyer", "judge", "paralegal", "police officer", "firefighter", "pilot", "flight attendant",
+        "chef", "cook", "baker", "barista", "server", "bartender", "farmer", "rancher", "scientist", "researcher",
+        "lab technician", "accountant", "auditor", "financial analyst", "banker", "investor", "real estate agent", "salesperson", "marketing manager", "social media manager",
+        "journalist", "photographer", "videographer", "actor", "musician", "athlete", "coach", "fitness trainer", "therapist", "psychologist",
+        "counselor", "translator", "interpreter", "delivery driver", "truck driver", "warehouse worker", "construction worker", "security guard", "cashier", "customer support"
+      ],
+      history: [
+        "ancient egypt", "mesopotamia", "indus valley", "ancient greece", "roman empire", "byzantine empire", "medieval europe", "renaissance", "age of exploration", "industrial revolution",
+        "american revolution", "french revolution", "civil war", "world war i", "world war ii", "cold war", "fall of the berlin wall", "printing press", "magna carta", "black death",
+        "reformation", "enlightenment", "great depression", "moon landing", "stone age", "bronze age", "iron age", "feudalism", "crusades", "ottoman empire",
+        "mongol empire", "mughal empire", "qing dynasty", "han dynasty", "song dynasty", "tokugawa shogunate", "aztec empire", "maya civilization", "inca empire", "viking age",
+        "age of sail", "silk road", "spice trade", "colonial america", "gold rush", "civil rights movement", "women's suffrage", "space race", "digital revolution", "rise of the internet",
+        "arab spring", "industrial age steam", "railroad expansion", "telegraph invention", "telephone invention", "radio era", "television era", "nuclear age", "exploration of antarctica", "apollo program"
+      ],
+      humanBody: [
+        "head", "skull", "brain", "face", "eye", "eyebrow", "eyelash", "ear", "nose", "mouth",
+        "tongue", "tooth", "teeth", "lip", "jaw", "neck", "shoulder", "arm", "elbow", "wrist",
+        "hand", "finger", "thumb", "palm", "chest", "rib", "heart", "lung", "stomach", "liver",
+        "kidney", "spleen", "pancreas", "intestine", "bladder", "spine", "back", "hip", "pelvis", "leg",
+        "thigh", "knee", "calf", "ankle", "foot", "heel", "toe", "skin", "muscle", "bone",
+        "blood", "artery", "vein", "nerve", "tendon", "ligament", "cartilage", "hair", "nail", "immune system",
+        "lymph node", "diaphragm", "esophagus", "trachea", "larynx", "pharynx"
+      ],
+      household: [
+        "sofa", "couch", "chair", "armchair", "recliner", "table", "coffee table", "dining table", "desk", "bookshelf",
+        "bed", "mattress", "pillow", "blanket", "duvet", "sheet", "nightstand", "lamp", "floor lamp", "ceiling fan",
+        "tv", "remote control", "router", "modem", "speaker", "headphones", "clock", "mirror", "curtain", "blinds",
+        "rug", "carpet", "doormat", "trash can", "recycling bin", "vacuum", "broom", "mop", "bucket", "spray bottle",
+        "dish soap", "sponge", "dishwasher", "sink", "faucet", "oven", "stove", "microwave", "toaster", "fridge",
+        "freezer", "kettle", "coffee maker", "blender", "cutting board", "knife", "fork", "spoon", "plate", "bowl",
+        "cup", "mug", "napkin", "towel", "laundry basket", "hanger", "closet", "drawer", "cabinet", "pantry"
+      ],
+      nature: [
+        "mountain", "river", "lake", "ocean", "sea", "waterfall", "glacier", "volcano", "desert", "forest",
+        "jungle", "rainforest", "savanna", "canyon", "valley", "meadow", "prairie", "dune", "cliff", "cave",
+        "coral reef", "island", "archipelago", "peninsula", "delta", "estuary", "lagoon", "bay", "fjord", "geyser",
+        "hot spring", "iceberg", "aurora", "thunderstorm", "lightning", "rainbow", "eclipse", "hurricane", "tornado", "blizzard",
+        "monsoon", "snowfall", "sunrise", "sunset", "tide", "wave", "oasis", "plateau", "butte", "mesa",
+        "hill", "peak", "ridge", "wetland", "marsh", "swamp", "bog", "mangrove", "steppe", "taiga"
+      ],
+      animals: [
+        "dog", "cat", "horse", "cow", "sheep", "goat", "pig", "chicken", "duck", "goose",
+        "turkey", "rabbit", "deer", "moose", "elk", "yak", "camel", "llama", "alpaca", "donkey",
+        "zebra", "giraffe", "elephant", "rhinoceros", "hippopotamus", "lion", "tiger", "leopard", "cheetah", "panther",
+        "bear", "panda", "koala", "kangaroo", "wallaby", "opossum", "sloth", "armadillo", "anteater", "crocodile",
+        "alligator", "turtle", "tortoise", "snake", "lizard", "chameleon", "frog", "toad", "salamander", "dolphin",
+        "whale", "shark", "octopus", "squid", "crab", "lobster", "penguin", "eagle", "owl", "fox"
+      ],
+      canada: [
+        "toronto", "montreal", "vancouver", "calgary", "ottawa", "quebec city", "edmonton", "winnipeg", "halifax", "victoria",
+        "saskatoon", "regina", "st john's", "yellowknife", "whitehorse", "nunavut", "pei", "nova scotia", "new brunswick", "manitoba",
+        "saskatchewan", "alberta", "british columbia", "ontario", "quebec", "yukon", "northwest territories", "niagara falls", "cn tower", "parliament hill",
+        "rideau canal", "banff", "jasper", "lake louise", "whistler", "cavendish beach", "bay of fundy", "poutine", "maple syrup", "beaver tail pastry",
+        "nanaimo bar", "butter tart", "hockey night in canada", "tim hortons", "loonie", "toonie", "mountie", "maple leaf", "grey cup", "stanley cup",
+        "curling rink", "lacrosse", "bluenose schooner", "cabot trail", "west edmonton mall", "canada day", "cbc radio", "trans-canada highway", "go train", "skytrain"
+      ],
+      china: [
+        "beijing", "shanghai", "guangzhou", "shenzhen", "chengdu", "chongqing", "wuhan", "xi'an", "hangzhou", "suzhou",
+        "nanjing", "tianjin", "qingdao", "dalian", "harbin", "shenyang", "kunming", "lanzhou", "urumqi", "lhasa",
+        "hong kong", "macau", "hainan", "guilin", "yangshuo", "zhangjiajie", "huangshan", "great wall", "forbidden city", "summer palace",
+        "terracotta army", "west lake", "potala palace", "bund", "oriental pearl tower", "pearl river", "yangtze river", "yellow river", "silk road", "panda reserve",
+        "sichuan hotpot", "dim sum", "peking duck", "mooncake", "baozi", "jiaozi", "chow mein", "mapo tofu", "kung pao chicken", "zhajiangmian",
+        "dragon boat festival", "mid-autumn festival", "spring festival", "lantern festival", "qipao", "tai chi", "mahjong", "go", "tea ceremony", "porcelain"
+      ]
+    };
+    const categoryKeys = ["random", "foods", "fruits", "sports", "music", "highSchoolSubjects", "geography", "jobs", "history", "humanBody", "household", "nature", "animals", "canada", "china"];
+
+    const elements = {
+      playerCount: document.getElementById("playerCount"),
+      categorySelect: document.getElementById("categorySelect"),
+      categoryGrid: document.getElementById("categoryGrid"),
+      translateCatsBtn: document.getElementById("translateCatsBtn"),
+      startBtn: document.getElementById("startBtn"),
+      categoryPill: document.getElementById("categoryPill"),
+      translateBtn: document.getElementById("translateBtn"),
+      roleCard: document.getElementById("roleCard"),
+      revealBtn: document.getElementById("revealBtn"),
+      nextBtn: document.getElementById("nextBtn"),
+      turnNote: document.getElementById("turnNote"),
+      setupScreen: document.getElementById("setupScreen"),
+      dealScreen: document.getElementById("dealScreen"),
+      backBtn: document.getElementById("backBtn"),
+      rulesBtn: document.getElementById("rulesBtn"),
+      rulesModal: document.getElementById("rulesModal"),
+      rulesBackdrop: document.getElementById("rulesBackdrop"),
+      closeRules: document.getElementById("closeRules"),
+    };
+
+    const state = {
+      totalPlayers: 6,
+      chosenCategory: null,
+      word: null,
+      liarIndex: null,
+      currentPlayer: 1,
+      active: false,
+      translationEnabled: false,
+      categoryTranslationEnabled: false,
+      categoryTranslations: {},
+    };
+    const translationCache = {};
+
+    function randomFrom(array) {
+      return array[Math.floor(Math.random() * array.length)];
+    }
+
+    function pickCategory(name) {
+      if (name === "random") return randomFrom(Object.keys(categories));
+      return name;
+    }
+
+    function playerLabel() {
+      return `Player ${state.currentPlayer} / ${state.totalPlayers}`;
+    }
+
+    function setTranslationEnabled(on) {
+      state.translationEnabled = on;
+      elements.translateBtn.textContent = on ? "Chinese on" : "中 / EN";
+    }
+
+    function setCategoryTranslationEnabled(on) {
+      state.categoryTranslationEnabled = on;
+      elements.translateCatsBtn.textContent = on ? "Chinese on" : "中 / EN";
+      if (!on) {
+        state.categoryTranslations = {};
+        renderCategoryButtons();
+        return;
+      }
+      translateCategories();
+    }
+
+    function getCategoryLabel(key) {
+      if (key === "random") return state.categoryTranslationEnabled && state.categoryTranslations.random
+        ? state.categoryTranslations.random
+        : "Random";
+      if (state.categoryTranslationEnabled && state.categoryTranslations[key]) {
+        return state.categoryTranslations[key];
+      }
+      return prettyName(key);
+    }
+
+    function translateCategories() {
+      categoryKeys.forEach(key => {
+        const source = key === "random" ? "Random category" : prettyName(key);
+        translateWord(source).then(translated => {
+          if (translated) {
+            state.categoryTranslations[key] = translated;
+            renderCategoryButtons();
+          }
+        }).catch(() => {
+          // keep existing labels if translation fails
+        });
+      });
+    }
+
+    async function translateWord(word) {
+      if (!word) return null;
+      if (translationCache[word]) return translationCache[word];
+      // Try Google endpoint (unofficial) first, then fall back to Argos.
+      const tryGoogle = async () => {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 6000);
+        const params = new URLSearchParams({
+          client: "gtx",
+          sl: "en",
+          tl: "zh-CN",
+          dt: "t",
+          q: word,
+        });
+        const res = await fetch(`https://translate.googleapis.com/translate_a/single?${params.toString()}`, {
+          headers: { "Accept": "application/json" },
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        if (!res.ok) throw new Error("google translate failed");
+        const data = await res.json();
+        if (Array.isArray(data) && Array.isArray(data[0]) && Array.isArray(data[0][0])) {
+          return data[0][0][0];
+        }
+        throw new Error("google translate unexpected shape");
+      };
+
+      const tryArgos = async () => {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 6000);
+        const res = await fetch("https://translate.argosopentech.com/translate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify({ q: word, source: "en", target: "zh", format: "text" }),
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        if (!res.ok) throw new Error("argos translate failed");
+        const data = await res.json();
+        if (data && data.translatedText) return data.translatedText;
+        throw new Error("argos translate unexpected shape");
+      };
+
+      try {
+        const g = await tryGoogle();
+        translationCache[word] = g;
+        return g;
+      } catch (err) {
+        console.warn("Google translate failed, falling back", err);
+      }
+
+      try {
+        const a = await tryArgos();
+        translationCache[word] = a;
+        return a;
+      } catch (err) {
+        console.warn("Argos translate failed", err);
+      }
+
+      translationCache[word] = "(translation unavailable – check internet)";
+      return translationCache[word];
+    }
+
+    function showScreen(name) {
+      const isDeal = name === "deal";
+      elements.setupScreen.classList.toggle("hidden", isDeal);
+      elements.dealScreen.classList.toggle("hidden", !isDeal);
+    }
+
+    function renderMeta() {
+      elements.categoryPill.textContent = state.chosenCategory
+        ? `Category: ${prettyName(state.chosenCategory)}`
+        : "Category: –";
+    }
+
+    function startGame() {
+      const total = parseInt(elements.playerCount.value, 10);
+      if (Number.isNaN(total) || total < 3 || total > 20) {
+        alert("Player count must be between 3 and 20.");
+        return;
+      }
+      const selected = pickCategory(elements.categorySelect.value);
+      const word = randomFrom(categories[selected]);
+      state.totalPlayers = total;
+      state.chosenCategory = selected;
+      state.word = word;
+      state.liarIndex = Math.floor(Math.random() * total) + 1;
+      state.currentPlayer = 1;
+      state.active = true;
+      renderMeta();
+      renderTurnNote();
+      renderRoleCard("Waiting…", "Pass the device to Player 1 and tap “Show role”.", false, playerLabel());
+      elements.revealBtn.disabled = false;
+      elements.nextBtn.disabled = true;
+      showScreen("deal");
+    }
+
+    function renderTurnNote(done = false) {
+      if (!state.active) {
+        elements.turnNote.textContent = "Press start to pick a word.";
+        return;
+      }
+      if (done) {
+        elements.turnNote.textContent = "All roles dealt. Discuss, accuse, then let the liar guess the word.";
+      } else {
+        elements.turnNote.textContent = `Player ${state.currentPlayer} of ${state.totalPlayers}: tap “Show role”, then hide and pass.`;
+      }
+    }
+
+    function renderRoleCard(title, subtitle, isLiar = false, extra = []) {
+      const extras = Array.isArray(extra) ? extra : (extra ? [extra] : []);
+      elements.roleCard.innerHTML = `
+        <strong ${isLiar ? 'class="warning"' : ""}>${title}</strong>
+        <span class="${isLiar ? "warning" : "muted"}">${subtitle}</span>
+        ${extras.map(line => `<span class="subline">${line}</span>`).join("")}
+      `;
+    }
+
+    function prettyName(key) {
+      switch (key) {
+        case "highSchoolSubjects": return "High school subjects";
+        case "humanBody": return "Human body";
+        case "household": return "Household items";
+        default: return key.charAt(0).toUpperCase() + key.slice(1);
+      }
+    }
+
+    function setActiveCategory(value) {
+      elements.categorySelect.value = value;
+      const buttons = elements.categoryGrid.querySelectorAll("[data-cat]");
+      buttons.forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.cat === value);
+      });
+    }
+
+    function renderCategoryButtons() {
+      const frag = document.createDocumentFragment();
+      categoryKeys.forEach(key => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "category-btn";
+        btn.dataset.cat = key;
+        btn.textContent = getCategoryLabel(key);
+        btn.addEventListener("click", () => setActiveCategory(key));
+        frag.appendChild(btn);
+      });
+      elements.categoryGrid.innerHTML = "";
+      elements.categoryGrid.appendChild(frag);
+      setActiveCategory(elements.categorySelect.value || "random");
+    }
+
+    function revealRole() {
+      if (!state.active) return;
+      if (state.currentPlayer > state.totalPlayers) return;
+      const isLiar = state.currentPlayer === state.liarIndex;
+      const categoryText = `Category: ${prettyName(state.chosenCategory)}`;
+      const label = playerLabel();
+      if (isLiar) {
+        if (state.translationEnabled) {
+          renderRoleCard("Translating…", "Blend in. Listen for clues. Guess the word at the end.", true, label);
+          translateWord("You are the LIAR!").then(translated => {
+            renderRoleCard(translated || "You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
+          }).catch(() => {
+            renderRoleCard("You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
+          });
+        } else {
+          renderRoleCard("You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
+        }
+      } else {
+        const extras = [label];
+        if (state.translationEnabled) {
+          renderRoleCard("Your word: translating…", categoryText, false, extras);
+          translateWord(state.word).then(translated => {
+            renderRoleCard(`Your word: ${translated || state.word}`, categoryText, false, extras);
+          }).catch(() => {
+            renderRoleCard(`Your word: ${state.word}`, categoryText, false, extras);
+          });
+        } else {
+          renderRoleCard(`Your word: ${state.word}`, categoryText, false, extras);
+        }
+      }
+      elements.revealBtn.disabled = true;
+      elements.nextBtn.disabled = false;
+    }
+
+    function nextPlayer() {
+      if (!state.active) return;
+      if (state.currentPlayer > state.totalPlayers) return;
+      state.currentPlayer += 1;
+      if (state.currentPlayer > state.totalPlayers) {
+        renderRoleCard("Ready to debate", "All roles dealt. Close the card and start talking!");
+        renderTurnNote(true);
+        elements.revealBtn.disabled = true;
+        elements.nextBtn.disabled = true;
+        return;
+      }
+      renderRoleCard("Hidden", "Pass the device, then tap “Show role”.", false, playerLabel());
+      renderTurnNote();
+      elements.revealBtn.disabled = false;
+      elements.nextBtn.disabled = true;
+    }
+
+    elements.startBtn.addEventListener("click", startGame);
+    elements.revealBtn.addEventListener("click", revealRole);
+    elements.nextBtn.addEventListener("click", nextPlayer);
+    elements.translateBtn.addEventListener("click", () => {
+      const enable = !state.translationEnabled;
+      setTranslationEnabled(enable);
+      const showingRole = state.active && elements.revealBtn.disabled && state.currentPlayer <= state.totalPlayers;
+      const isLiar = state.currentPlayer === state.liarIndex;
+      if (!showingRole) return;
+      const categoryText = `Category: ${prettyName(state.chosenCategory)}`;
+      const label = playerLabel();
+      if (enable) {
+        if (isLiar) {
+          renderRoleCard("Translating…", "Blend in. Listen for clues. Guess the word at the end.", true, label);
+          translateWord("You are the LIAR!").then(translated => {
+            renderRoleCard(translated || "You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
+          }).catch(() => {
+            renderRoleCard("You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
+          });
+        } else {
+          renderRoleCard("Your word: translating…", categoryText, false, label);
+          translateWord(state.word).then(translated => {
+            renderRoleCard(`Your word: ${translated || state.word}`, categoryText, false, label);
+          }).catch(() => {
+            renderRoleCard(`Your word: ${state.word}`, categoryText, false, label);
+          });
+        }
+      } else {
+        if (isLiar) {
+          renderRoleCard("You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
+        } else {
+          renderRoleCard(`Your word: ${state.word}`, categoryText, false, label);
+        }
+      }
+    });
+    elements.translateCatsBtn.addEventListener("click", () => {
+      const enable = !state.categoryTranslationEnabled;
+      setCategoryTranslationEnabled(enable);
+    });
+    elements.backBtn.addEventListener("click", () => {
+      state.active = false;
+      state.word = null;
+      state.chosenCategory = null;
+      state.liarIndex = null;
+      state.currentPlayer = 1;
+      elements.revealBtn.disabled = true;
+      elements.nextBtn.disabled = true;
+      renderMeta();
+      renderTurnNote();
+      renderRoleCard("Waiting…", "Tap “Start / New Word” from setup.", false, playerLabel());
+      showScreen("setup");
+    });
+    elements.rulesBtn.addEventListener("click", () => elements.rulesModal.classList.remove("hidden"));
+    elements.rulesBackdrop.addEventListener("click", () => elements.rulesModal.classList.add("hidden"));
+    elements.closeRules.addEventListener("click", () => elements.rulesModal.classList.add("hidden"));
+
+    // Initialize defaults.
+    renderCategoryButtons();
+    setTranslationEnabled(false);
+    setCategoryTranslationEnabled(false);
+    renderMeta();
+    renderTurnNote();
+    elements.revealBtn.disabled = true;
+    elements.nextBtn.disabled = true;
+  </script>
+</body>
+</html>
+
