@@ -2,1118 +2,611 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Liar Game (Local)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+  <title>One Word Imposter</title>
   <style>
     :root {
-      --bg: #f7e9e5;
-      --card: #ffffff;
-      --accent: #7c3aed;
-      --muted: #4b5563;
-      --text: #111827;
-      --border: #e5e7eb;
-      --danger: #dc2626;
+      --bg: #f5f7f4;
+      --accent: #2d6a4f;
+      --button-bg: #40916c;
+      --text: #1a1a1a;
+      --tile-bg: #ffffff;
+      --tile-border: #e8ebe6;
+      --muted: #6b7280;
     }
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
       margin: 0;
-      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at 20% 20%, #fef2f2, #f7e9e5 45%, #f5e6e8);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
       color: var(--text);
       min-height: 100vh;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
     }
-    .container {
+    .header-hint {
+      font-size: 28px;
+      font-weight: 600;
+      margin: 20px 0 30px;
+      color: #333;
+      text-align: center;
+    }
+    .app-frame {
       width: 100%;
-      max-width: clamp(520px, 92vw, 1200px);
-      padding: 56px 40px 72px;
-      margin: 0 auto;
-    }
-    h1 {
-      margin: 0 0 8px;
-      font-weight: 800;
-      text-align: center;
-      letter-spacing: 0.2px;
-      font-size: 32px;
-    }
-    p.lead {
-      margin: 0 0 22px;
-      color: var(--muted);
-      text-align: center;
-      font-size: 16px;
-    }
-    .grid {
+      max-width: 420px;
+      background: white;
+      border-radius: 50px;
+      padding: 40px 28px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.04);
+      position: relative;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      align-items: center;
+      min-height: 700px;
     }
-    .card {
-      width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 22px;
-      padding: 38px;
-      box-shadow: 0 28px 80px rgba(17, 24, 39, 0.12);
-    }
-    h3 {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: 0.2px;
-    }
-    label {
-      display: block;
-      font-weight: 700;
-      margin-bottom: 12px;
-      color: var(--text);
-      font-size: 17px;
-    }
-    input, select, button {
-      width: 100%;
-      padding: 20px;
-      border-radius: 18px;
-      border: 1px solid var(--border);
-      background: #fff;
-      color: var(--text);
-      font-size: 20px;
-    }
-    select { appearance: none; }
-    button {
-      background: var(--accent);
-      color: #fff;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 0.08s ease, box-shadow 0.12s ease;
+    .more-btn {
+      position: absolute;
+      top: 35px;
+      right: 28px;
+      background: #e8ebe6;
       border: none;
-      box-shadow: 0 10px 25px rgba(124, 58, 237, 0.25);
-    }
-    button:hover { transform: translateY(-1px); }
-    button:active { transform: translateY(0); }
-    button:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; transform: none; }
-    .inline {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
       display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
       align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      color: #6b7280;
     }
-    .inline input { flex: 1; min-width: 160px; }
-    .ghost {
-      background: #f3f4f6;
-      color: var(--text);
-      box-shadow: none;
-      border: 1px solid var(--border);
+    h1 {
+      color: var(--accent);
+      font-size: 30px;
+      margin: 0 0 20px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      text-align: center;
     }
-    .badge {
-      display: inline-flex;
+    .player-selector {
+      display: flex;
+      flex-direction: row;
       align-items: center;
-      gap: 6px;
-      padding: 12px 18px;
-      border-radius: 999px;
-      background: #f3f4f6;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 15px;
-      font-weight: 700;
+      gap: 20px;
+      margin-bottom: 25px;
     }
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 10px 16px;
-      border-radius: 999px;
-      background: #f3f4f6;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      font-weight: 700;
-      font-size: 15px;
-      white-space: nowrap;
+    .arrow-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px 12px;
+      color: #9ca3af;
+      font-size: 22px;
+      transition: color 0.2s;
+    }
+    .arrow-btn:active { color: var(--accent); }
+    .player-count-display {
+      font-size: 36px;
+      font-weight: 800;
+      display: flex;
+      align-items: baseline;
+      min-width: 100px;
+      justify-content: center;
+    }
+    .player-count-display span {
+      font-size: 16px;
+      font-weight: 600;
+      color: #6b7280;
+      margin-left: 6px;
     }
     .category-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 14px;
-      margin-top: 12px;
-    }
-    .category-btn {
-      background: #f8fafc;
-      color: var(--text);
-      box-shadow: none;
-      border: 1px solid var(--border);
-      font-weight: 800;
-      font-size: 16px;
-      padding: 16px 18px;
-    }
-    .category-btn.active {
-      border-color: var(--accent);
-      background: #f3e8ff;
-      color: #4c1d95;
-      box-shadow: 0 10px 22px rgba(124, 58, 237, 0.18);
-    }
-    .role-card {
-      border-radius: 20px;
-      padding: 38px;
-      background: #f9fafb;
-      border: 1px dashed var(--border);
-      text-align: center;
-      min-height: 300px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+      grid-template-columns: repeat(3, 1fr);
       gap: 16px;
+      width: 100%;
+      margin-bottom: 20px;
     }
-    .role-card strong {
-      display: block;
-      font-size: 34px;
-      margin: 0;
-    }
-    .subline {
-      color: var(--muted);
-      font-size: 19px;
-      font-weight: 800;
-      display: block;
-    }
-    #turnNote {
-      font-size: 20px;
-      font-weight: 700;
-    }
-    .warning { color: var(--danger); font-weight: 800; }
-    .muted { color: var(--muted); }
-    .divider { height: 1px; background: var(--border); margin: 14px 0; }
-    .topbar {
+    .category-tile {
+      background: white;
+      border: 1px solid var(--tile-border);
+      border-radius: 50%; /* Circles */
+      aspect-ratio: 1;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 10px;
+      justify-content: center;
+      text-align: center;
+      padding: 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      color: #333;
+      line-height: 1.2;
     }
-    .screen.hidden { display: none; }
-    .screen { width: 100%; }
-    .stack > * + * { margin-top: 12px; }
-    .center { text-align: center; }
-    .inline.spread { justify-content: space-between; }
+    .category-tile.active {
+      border: 3.5px solid #000;
+      transform: scale(1.15);
+      z-index: 10;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+      font-size: 14px;
+      background: white;
+    }
+    .main-btn {
+      width: 100%;
+      background: var(--button-bg);
+      color: white;
+      border: none;
+      border-radius: 24px;
+      padding: 20px;
+      font-size: 19px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+      margin-top: auto;
+    }
+    .main-btn:active { transform: scale(0.97); opacity: 0.9; }
+    
+    .screen { width: 100%; display: none; height: 100%; flex-direction: column; align-items: center; }
+    .screen.active { display: flex; }
+
+    /* Rules Modal */
     .modal {
       position: fixed;
       inset: 0;
-      display: flex;
+      background: rgba(0,0,0,0.5);
+      display: none;
       align-items: center;
       justify-content: center;
-      z-index: 50;
+      z-index: 100;
+      padding: 24px;
+      backdrop-filter: blur(6px);
     }
-    .modal.hidden { display: none; }
-    .modal-backdrop {
-      position: absolute;
-      inset: 0;
-      background: rgba(17, 24, 39, 0.35);
-      backdrop-filter: blur(2px);
+    .modal.active { display: flex; }
+    .modal-content {
+      background: white;
+      padding: 36px;
+      border-radius: 35px;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.2);
     }
-    .modal-panel {
-      position: relative;
-      background: #fff;
-      color: var(--text);
-      border-radius: 18px;
-      padding: 22px;
-      max-width: 520px;
-      width: calc(100% - 32px);
-      box-shadow: 0 20px 60px rgba(17, 24, 39, 0.25);
-      z-index: 1;
+    .modal-content h3 { margin-top: 0; font-size: 24px; color: var(--accent); font-weight: 800; }
+    .modal-content ol { padding-left: 20px; line-height: 1.7; color: #444; font-size: 16px; }
+    .close-modal {
+      width: 100%;
+      padding: 16px;
+      background: #e8ebe6;
+      border: none;
+      border-radius: 16px;
+      margin-top: 25px;
+      font-weight: 700;
+      cursor: pointer;
     }
-    .rules-list {
-      padding-left: 18px;
-      color: #111827;
-      line-height: 1.5;
-      margin: 12px 0 0;
+
+    /* Deal Screen */
+    .deal-card {
+      background: #fafbfc;
+      border: 2px dashed #e5e7eb;
+      border-radius: 50%; /* Circle card */
+      width: 300px;
+      height: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 20px 0;
+      padding: 30px;
+      text-align: center;
+      transition: all 0.3s ease;
     }
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      border: 0;
+    .role-text { font-size: 32px; font-weight: 800; margin: 10px 0; color: var(--text); line-height: 1.1; }
+    .role-sub { font-size: 15px; color: var(--muted); margin-bottom: 15px; }
+    .pill-row { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; justify-content: center; }
+    .mini-pill { background: #e8ebe6; padding: 8px 16px; border-radius: 25px; font-size: 13px; font-weight: 700; color: #555; }
+    
+    .translation-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-top: 15px;
+      width: 100%;
     }
-    @media (max-width: 900px) {
-      .container { padding: 32px 20px 48px; }
-      .card { padding: 26px; border-radius: 20px; }
-      h1 { font-size: 28px; }
-      p.lead { font-size: 15px; }
-      .category-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
-      .inline.spread { flex-wrap: wrap; gap: 10px; }
-      .pill { width: 100%; justify-content: center; }
+    .lang-select {
+      padding: 10px 16px;
+      border-radius: 20px;
+      border: 1px solid #e5e7eb;
+      background: #f9f9f9;
+      font-size: 14px;
+      font-weight: 600;
+      width: 180px;
+      cursor: pointer;
     }
-    @media (max-width: 640px) {
-      body { align-items: flex-start; }
-      .container { padding: 26px 14px 38px; }
-      .card { padding: 22px; border-radius: 18px; }
-      h1 { font-size: 26px; }
-      p.lead { font-size: 14px; }
-      input, select, button { font-size: 16px; padding: 14px; }
-      .role-card { min-height: 220px; padding: 24px; }
-      .role-card strong { font-size: 26px; }
-      #turnNote { font-size: 16px; }
-      .inline { flex-direction: column; align-items: stretch; }
-      .inline.spread { align-items: stretch; }
-      .topbar { flex-direction: column; align-items: center; gap: 8px; }
-      .pill { width: 100%; justify-content: center; }
-      .category-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
-      button { width: 100%; }
+    .toggle-btn {
+      background: none;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
     }
-    @media (min-width: 1200px) {
-      h1 { font-size: 34px; }
-      p.lead { font-size: 17px; }
-      .card { padding: 38px; }
-      input, select, button { font-size: 20px; padding: 20px; }
-      .role-card { min-height: 300px; padding: 38px; }
-      .role-card strong { font-size: 34px; }
-      #turnNote { font-size: 19px; }
+    .toggle-btn.on { background: var(--accent); color: white; }
+
+    @media (max-width: 480px) {
+      .app-frame { padding: 35px 20px; border-radius: 40px; min-height: 650px; }
+      .category-grid { gap: 12px; }
+      .category-tile { font-size: 12px; }
+      .deal-card { width: 260px; height: 260px; }
+      .role-text { font-size: 28px; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="topbar">
-      <div>
-        <h1 id="titleText">One Word Imposter</h1>
-        <p class="lead" id="leadText">Simple pass-and-play for 3–20 players. One liar, one secret word.</p>
+  <div class="header-hint" id="headerHint">Choose a category</div>
+
+  <div class="app-frame">
+    <button class="more-btn" id="rulesToggle">•••</button>
+    
+    <!-- SETUP SCREEN -->
+    <section id="setupScreen" class="screen active">
+      <h1 id="appTitle">One Word Imposter</h1>
+      
+      <div class="player-selector">
+        <button class="arrow-btn" id="playerDown">◀</button>
+        <div class="player-count-display">
+          <span id="playerVal">6</span> <span>Players</span>
+        </div>
+        <button class="arrow-btn" id="playerUp">▶</button>
       </div>
-          <button id="rulesBtn" type="button" class="ghost" style="width:auto; padding:10px 14px;">Rules</button>
+
+      <div class="category-grid" id="categoryGrid">
+        <!-- Tiles generated by JS -->
+      </div>
+
+      <button class="main-btn" id="startBtn">Start Game</button>
+    </section>
+
+    <!-- DEAL SCREEN -->
+    <section id="dealScreen" class="screen">
+      <div class="pill-row">
+        <div class="mini-pill" id="catPill">Category: –</div>
+        <div class="mini-pill" id="langPill">EN</div>
+      </div>
+      
+      <div class="deal-card" id="roleCard">
+        <div class="role-text" id="cardTitle">Hidden</div>
+        <div class="role-sub" id="cardSub">Pass the device to Player 1</div>
+        <div id="cardExtra" style="font-weight:700; color:#888;">Player 1 / 6</div>
+      </div>
+
+      <button class="main-btn" id="revealBtn">Show role</button>
+      <button class="main-btn" id="nextBtn" style="background:#e8ebe6; color:#333; margin-top:12px; display:none;">Next player</button>
+      <button class="main-btn" id="backBtn" style="background:none; color:#6b7280; font-size:14px; margin-top:10px;">← Back to Setup</button>
+    </section>
+
+    <!-- SHARED TRANSLATION CONTROLS -->
+    <div class="translation-controls" style="margin-top: 25px; border-top: 1px solid #f0f0f0; padding-top: 20px;">
+      <select class="lang-select" id="setupLang">
+        <option value="en">English (default)</option>
+        <option value="zh-CN">Chinese (Simplified)</option>
+        <option value="es">Spanish</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="ja">Japanese</option>
+        <option value="ko">Korean</option>
+        <option value="ar">Arabic</option>
+        <option value="hi">Hindi</option>
+      </select>
+      <button class="toggle-btn" id="setupTransToggle">Translate off</button>
     </div>
-
-    <section id="setupScreen" class="screen">
-      <div class="card">
-        <div class="stack">
-          <div>
-            <h3 id="setupTitle">Setup</h3>
-            <p class="muted" id="setupHint" style="margin:6px 0 0;">Pick players and a category, then start.</p>
-          </div>
-          <div class="stack">
-            <h4 style="margin:4px 0 4px;">Translation helper</h4>
-            <p class="muted" id="translateHelper" style="margin:0;">
-              Choose a language, then toggle “Translate” on to see the whole UI and secret words in that language. Toggle off to return to English anytime.
-            </p>
-          </div>
-          <div class="stack">
-            <div class="inline spread" style="align-items:center;">
-              <label for="langSelect" id="langLabel">Language</label>
-              <select id="langSelect" style="width:auto; min-width: 200px;">
-                <option value="en">English (default)</option>
-                <option value="zh-CN">Chinese (Simplified)</option>
-                <option value="es">Spanish</option>
-                <option value="fr">French</option>
-                <option value="de">German</option>
-                <option value="ja">Japanese</option>
-                <option value="ko">Korean</option>
-                <option value="ar">Arabic</option>
-                <option value="hi">Hindi</option>
-              </select>
-            </div>
-          </div>
-          <div class="stack">
-            <label for="playerCount" id="numberLabel">Number of players (3–20)</label>
-            <div class="inline">
-              <input id="playerCount" type="number" min="3" max="20" value="6" />
-              <span class="badge" id="liarBadge">Liar assigned randomly</span>
-            </div>
-          </div>
-          <div class="stack">
-            <div class="inline spread" style="align-items:center;">
-              <label for="categorySelect" id="categoryLabel">Category</label>
-              <button id="translateCatsBtn" type="button" class="ghost" style="width:auto;">中 / EN</button>
-            </div>
-            <div class="category-grid" id="categoryGrid"></div>
-            <select id="categorySelect" class="sr-only">
-              <option value="random">Random category</option>
-              <option value="foods">Foods</option>
-              <option value="fruits">Fruits</option>
-              <option value="sports">Sports</option>
-              <option value="music">Music</option>
-              <option value="highSchoolSubjects">High school subjects</option>
-              <option value="geography">Geography</option>
-              <option value="jobs">Jobs</option>
-              <option value="history">History</option>
-              <option value="humanBody">Human body</option>
-              <option value="household">Household items</option>
-              <option value="nature">Nature</option>
-              <option value="animals">Animals</option>
-              <option value="canada">Canada</option>
-              <option value="china">China</option>
-            </select>
-          </div>
-          <button id="startBtn" type="button" style="font-size:18px; padding:16px;">Start / New Word</button>
-          <p class="muted center" id="startNote" style="margin:0;">Pass the device and reveal roles one at a time.</p>
-        </div>
-      </div>
-    </section>
-
-    <section id="dealScreen" class="screen hidden">
-      <div class="card">
-        <div class="inline spread" style="align-items:center; gap:8px;">
-          <button id="backBtn" type="button" class="ghost" style="width:auto;">← Setup</button>
-          <div class="pill" id="categoryPill">Category: –</div>
-          <div class="pill" id="langPill">Language: English</div>
-          <div class="inline" style="gap:8px; flex-wrap:nowrap;">
-            <button id="translateBtn" type="button" class="ghost" style="width:auto;">Translate off</button>
-          </div>
-        </div>
-        <div class="divider"></div>
-        <h3 id="dealTitle">Deal roles</h3>
-        <p class="muted" id="turnNote">Press start to pick a word.</p>
-        <div style="height: 8px;"></div>
-        <div class="role-card" id="roleCard">
-          <strong>Waiting…</strong>
-          <span class="muted">Tap “Show role” to begin.</span>
-        </div>
-        <div style="height: 12px;"></div>
-        <div class="inline">
-          <button id="revealBtn" type="button">Show role</button>
-          <button id="nextBtn" type="button" class="ghost">Hide / Next player</button>
-        </div>
-      </div>
-    </section>
   </div>
 
-  <div id="rulesModal" class="modal hidden" aria-modal="true" role="dialog">
-    <div class="modal-backdrop" id="rulesBackdrop"></div>
-    <div class="modal-panel">
-      <div class="inline spread" style="align-items:center;">
-        <h3 style="margin:0;" id="rulesTitle">Rules</h3>
-        <button id="closeRules" type="button" class="ghost" style="width:auto;">✕</button>
-      </div>
-      <ol class="rules-list" id="rulesList">
-        <li data-i18n="rule1">Everyone gets the secret word except one liar.</li>
-        <li data-i18n="rule2">Take turns giving short hints about the word.</li>
-        <li data-i18n="rule3">The liar listens, bluffs, and tries to blend in.</li>
-        <li data-i18n="rule4">After a few rounds, discuss and vote who the liar is.</li>
-        <li data-i18n="rule5">If the liar is caught, the group wins; if not, the liar wins — but the liar can also steal the win by guessing the word after votes.</li>
+  <!-- MODAL -->
+  <div class="modal" id="rulesModal">
+    <div class="modal-content">
+      <h3 id="rulesTitle">Rules</h3>
+      <ol id="rulesList">
+        <li data-i18n="rule1">One person is the imposter and doesn't know the word.</li>
+        <li data-i18n="rule2">Everyone else knows the secret word.</li>
+        <li data-i18n="rule3">Give one-word hints to prove you aren't the liar.</li>
+        <li data-i18n="rule4">Discuss and vote to catch the imposter!</li>
       </ol>
+      <h3 style="margin-top: 20px; font-size: 18px; color: var(--accent);">Translation Helper</h3>
+      <p style="font-size: 14px; color: #666; line-height: 1.6; margin: 10px 0;">
+        Select a language from the dropdown, then tap <strong>"Translate on"</strong> to see the entire UI and secret words in that language. 
+        This helps players who prefer a different language. Toggle off anytime to return to English.
+      </p>
+      <button class="close-modal" id="closeRules">Got it</button>
     </div>
   </div>
 
   <script>
     const categories = {
-      foods: [
-        "pizza", "burger", "pasta", "sushi", "taco", "burrito", "ramen", "curry", "stew", "fried rice",
-        "paella", "lasagna", "sandwich", "salad", "omelette", "pancakes", "waffles", "bagel", "doughnut", "quiche",
-        "soup", "chowder", "risotto", "meatballs", "roast chicken", "steak", "barbecue ribs", "falafel", "hummus", "shawarma",
-        "kebab", "gyro", "pita", "ceviche", "nachos", "enchilada", "quesadilla", "dumplings", "spring rolls", "bibimbap",
-        "kimchi", "hotpot", "pho", "pad thai", "green curry", "butter chicken", "tandoori", "samosa", "pav bhaji", "pierogi",
-        "gnocchi", "fajitas", "bruschetta", "ratatouille", "gazpacho", "poke bowl", "miso soup", "clam bake", "mac and cheese", "fried chicken"
-      ],
-      fruits: [
-        "apple", "banana", "orange", "mango", "pineapple", "strawberry", "blueberry", "raspberry", "blackberry", "cherry",
-        "grape", "watermelon", "cantaloupe", "honeydew", "kiwi", "papaya", "guava", "lychee", "peach", "plum",
-        "apricot", "nectarine", "pear", "pomegranate", "grapefruit", "tangerine", "clementine", "lime", "lemon", "coconut",
-        "fig", "date", "persimmon", "dragonfruit", "starfruit", "passionfruit", "jackfruit", "durian", "cranberry", "boysenberry",
-        "currant", "mulberry", "avocado", "olive", "tomato", "gooseberry", "elderberry", "sapodilla", "longan", "rambutan",
-        "loquat", "soursop", "plantain", "mandarin", "blood orange", "tangelo", "ugli fruit", "quince", "sugar apple", "carambola"
-      ],
-      sports: [
-        "soccer", "basketball", "baseball", "softball", "football", "rugby", "cricket", "tennis", "table tennis", "badminton",
-        "volleyball", "beach volleyball", "golf", "hockey", "ice hockey", "field hockey", "lacrosse", "handball", "water polo", "swimming",
-        "diving", "surfing", "sailing", "rowing", "kayaking", "canoeing", "cycling", "mountain biking", "bmx", "track and field",
-        "marathon", "triathlon", "wrestling", "boxing", "kickboxing", "martial arts", "judo", "karate", "taekwondo", "fencing",
-        "archery", "shooting", "skateboarding", "snowboarding", "skiing", "cross-country skiing", "biathlon", "curling", "figure skating", "speed skating",
-        "gymnastics", "cheerleading", "bowling", "darts", "billiards", "squash", "racquetball", "pickleball", "ultimate frisbee", "disc golf"
-      ],
-      music: [
-        "guitar", "piano", "violin", "cello", "viola", "double bass", "flute", "clarinet", "saxophone", "trumpet",
-        "trombone", "french horn", "tuba", "drums", "percussion", "xylophone", "marimba", "ukulele", "banjo", "mandolin",
-        "harp", "accordion", "harmonica", "synthesizer", "organ", "bass guitar", "microphone", "choir", "orchestra", "band",
-        "duet", "solo", "chorus", "verse", "bridge", "hook", "melody", "harmony", "rhythm", "tempo",
-        "beat", "scale", "chord", "arpeggio", "riff", "groove", "hip hop", "rock", "pop", "jazz",
-        "blues", "country", "folk", "reggae", "salsa", "merengue", "bachata", "techno", "house", "classical"
-      ],
-      highSchoolSubjects: [
-        "algebra", "geometry", "trigonometry", "calculus", "statistics", "precalculus", "algebra 2", "biology", "chemistry", "physics",
-        "earth science", "environmental science", "anatomy", "physiology", "computer science", "programming", "robotics", "engineering", "astronomy", "economics",
-        "microeconomics", "macroeconomics", "world history", "us history", "government", "civics", "psychology", "sociology", "philosophy", "ethics",
-        "english", "literature", "writing", "grammar", "creative writing", "journalism", "public speaking", "debate", "spanish", "french",
-        "german", "chinese", "latin", "art", "drawing", "painting", "sculpture", "music", "choir", "band",
-        "orchestra", "theater", "drama", "health", "physical education", "business", "accounting", "marketing", "entrepreneurship", "finance",
-        "ap calculus", "ap biology", "ap chemistry", "ap physics", "ap statistics", "ap us history", "ap world history", "ap government", "ap psychology", "ap computer science"
-      ],
-      geography: [
-        "asia", "europe", "africa", "north america", "south america", "australia", "antarctica", "pacific ocean", "atlantic ocean", "indian ocean",
-        "arctic ocean", "mediterranean sea", "caribbean sea", "gulf of mexico", "sahara desert", "gobi desert", "amazon river", "nile river", "yangtze river", "mississippi river",
-        "mount everest", "andes mountains", "himalayas", "rocky mountains", "alps", "ural mountains", "great lakes", "lake baikal", "lake victoria", "grand canyon",
-        "great barrier reef", "ganges river", "thames river", "danube river", "rhine river", "serengeti", "savanna", "taiga", "tundra", "rainforest",
-        "steppe", "delta", "isthmus", "peninsula", "archipelago", "island", "strait", "fjord", "canyon", "plateau",
-        "valley", "volcano", "glacier", "atoll", "lagoon", "monsoon", "typhoon", "equator", "prime meridian", "tropic of cancer", "tropic of capricorn", "cape"
-      ],
-      jobs: [
-        "doctor", "nurse", "surgeon", "paramedic", "pharmacist", "dentist", "veterinarian", "teacher", "professor", "principal",
-        "software engineer", "product manager", "designer", "data scientist", "data analyst", "devops engineer", "systems administrator", "electrician", "plumber", "carpenter",
-        "mechanic", "civil engineer", "architect", "lawyer", "judge", "paralegal", "police officer", "firefighter", "pilot", "flight attendant",
-        "chef", "cook", "baker", "barista", "server", "bartender", "farmer", "rancher", "scientist", "researcher",
-        "lab technician", "accountant", "auditor", "financial analyst", "banker", "investor", "real estate agent", "salesperson", "marketing manager", "social media manager",
-        "journalist", "photographer", "videographer", "actor", "musician", "athlete", "coach", "fitness trainer", "therapist", "psychologist",
-        "counselor", "translator", "interpreter", "delivery driver", "truck driver", "warehouse worker", "construction worker", "security guard", "cashier", "customer support"
-      ],
-      history: [
-        "ancient egypt", "mesopotamia", "indus valley", "ancient greece", "roman empire", "byzantine empire", "medieval europe", "renaissance", "age of exploration", "industrial revolution",
-        "american revolution", "french revolution", "civil war", "world war i", "world war ii", "cold war", "fall of the berlin wall", "printing press", "magna carta", "black death",
-        "reformation", "enlightenment", "great depression", "moon landing", "stone age", "bronze age", "iron age", "feudalism", "crusades", "ottoman empire",
-        "mongol empire", "mughal empire", "qing dynasty", "han dynasty", "song dynasty", "tokugawa shogunate", "aztec empire", "maya civilization", "inca empire", "viking age",
-        "age of sail", "silk road", "spice trade", "colonial america", "gold rush", "civil rights movement", "women's suffrage", "space race", "digital revolution", "rise of the internet",
-        "arab spring", "industrial age steam", "railroad expansion", "telegraph invention", "telephone invention", "radio era", "television era", "nuclear age", "exploration of antarctica", "apollo program"
-      ],
-      humanBody: [
-        "head", "skull", "brain", "face", "eye", "eyebrow", "eyelash", "ear", "nose", "mouth",
-        "tongue", "tooth", "teeth", "lip", "jaw", "neck", "shoulder", "arm", "elbow", "wrist",
-        "hand", "finger", "thumb", "palm", "chest", "rib", "heart", "lung", "stomach", "liver",
-        "kidney", "spleen", "pancreas", "intestine", "bladder", "spine", "back", "hip", "pelvis", "leg",
-        "thigh", "knee", "calf", "ankle", "foot", "heel", "toe", "skin", "muscle", "bone",
-        "blood", "artery", "vein", "nerve", "tendon", "ligament", "cartilage", "hair", "nail", "immune system",
-        "lymph node", "diaphragm", "esophagus", "trachea", "larynx", "pharynx"
-      ],
-      household: [
-        "sofa", "couch", "chair", "armchair", "recliner", "table", "coffee table", "dining table", "desk", "bookshelf",
-        "bed", "mattress", "pillow", "blanket", "duvet", "sheet", "nightstand", "lamp", "floor lamp", "ceiling fan",
-        "tv", "remote control", "router", "modem", "speaker", "headphones", "clock", "mirror", "curtain", "blinds",
-        "rug", "carpet", "doormat", "trash can", "recycling bin", "vacuum", "broom", "mop", "bucket", "spray bottle",
-        "dish soap", "sponge", "dishwasher", "sink", "faucet", "oven", "stove", "microwave", "toaster", "fridge",
-        "freezer", "kettle", "coffee maker", "blender", "cutting board", "knife", "fork", "spoon", "plate", "bowl",
-        "cup", "mug", "napkin", "towel", "laundry basket", "hanger", "closet", "drawer", "cabinet", "pantry"
-      ],
-      nature: [
-        "mountain", "river", "lake", "ocean", "sea", "waterfall", "glacier", "volcano", "desert", "forest",
-        "jungle", "rainforest", "savanna", "canyon", "valley", "meadow", "prairie", "dune", "cliff", "cave",
-        "coral reef", "island", "archipelago", "peninsula", "delta", "estuary", "lagoon", "bay", "fjord", "geyser",
-        "hot spring", "iceberg", "aurora", "thunderstorm", "lightning", "rainbow", "eclipse", "hurricane", "tornado", "blizzard",
-        "monsoon", "snowfall", "sunrise", "sunset", "tide", "wave", "oasis", "plateau", "butte", "mesa",
-        "hill", "peak", "ridge", "wetland", "marsh", "swamp", "bog", "mangrove", "steppe", "taiga"
-      ],
-      animals: [
-        "dog", "cat", "horse", "cow", "sheep", "goat", "pig", "chicken", "duck", "goose",
-        "turkey", "rabbit", "deer", "moose", "elk", "yak", "camel", "llama", "alpaca", "donkey",
-        "zebra", "giraffe", "elephant", "rhinoceros", "hippopotamus", "lion", "tiger", "leopard", "cheetah", "panther",
-        "bear", "panda", "koala", "kangaroo", "wallaby", "opossum", "sloth", "armadillo", "anteater", "crocodile",
-        "alligator", "turtle", "tortoise", "snake", "lizard", "chameleon", "frog", "toad", "salamander", "dolphin",
-        "whale", "shark", "octopus", "squid", "crab", "lobster", "penguin", "eagle", "owl", "fox"
-      ],
-      canada: [
-        "toronto", "montreal", "vancouver", "calgary", "ottawa", "quebec city", "edmonton", "winnipeg", "halifax", "victoria",
-        "saskatoon", "regina", "st john's", "yellowknife", "whitehorse", "nunavut", "pei", "nova scotia", "new brunswick", "manitoba",
-        "saskatchewan", "alberta", "british columbia", "ontario", "quebec", "yukon", "northwest territories", "niagara falls", "cn tower", "parliament hill",
-        "rideau canal", "banff", "jasper", "lake louise", "whistler", "cavendish beach", "bay of fundy", "poutine", "maple syrup", "beaver tail pastry",
-        "nanaimo bar", "butter tart", "hockey night in canada", "tim hortons", "loonie", "toonie", "mountie", "maple leaf", "grey cup", "stanley cup",
-        "curling rink", "lacrosse", "bluenose schooner", "cabot trail", "west edmonton mall", "canada day", "cbc radio", "trans-canada highway", "go train", "skytrain"
-      ],
-      china: [
-        "beijing", "shanghai", "guangzhou", "shenzhen", "chengdu", "chongqing", "wuhan", "xi'an", "hangzhou", "suzhou",
-        "nanjing", "tianjin", "qingdao", "dalian", "harbin", "shenyang", "kunming", "lanzhou", "urumqi", "lhasa",
-        "hong kong", "macau", "hainan", "guilin", "yangshuo", "zhangjiajie", "huangshan", "great wall", "forbidden city", "summer palace",
-        "terracotta army", "west lake", "potala palace", "bund", "oriental pearl tower", "pearl river", "yangtze river", "yellow river", "silk road", "panda reserve",
-        "sichuan hotpot", "dim sum", "peking duck", "mooncake", "baozi", "jiaozi", "chow mein", "mapo tofu", "kung pao chicken", "zhajiangmian",
-        "dragon boat festival", "mid-autumn festival", "spring festival", "lantern festival", "qipao", "tai chi", "mahjong", "go", "tea ceremony", "porcelain"
-      ]
-    };
-    const categoryKeys = ["random", "foods", "fruits", "sports", "music", "highSchoolSubjects", "geography", "jobs", "history", "humanBody", "household", "nature", "animals", "canada", "china"];
-
-    const elements = {
-      playerCount: document.getElementById("playerCount"),
-      categorySelect: document.getElementById("categorySelect"),
-      categoryGrid: document.getElementById("categoryGrid"),
-      translateCatsBtn: document.getElementById("translateCatsBtn"),
-      langSelect: document.getElementById("langSelect"),
-      startBtn: document.getElementById("startBtn"),
-      categoryPill: document.getElementById("categoryPill"),
-      langPill: document.getElementById("langPill"),
-      translateBtn: document.getElementById("translateBtn"),
-      roleCard: document.getElementById("roleCard"),
-      revealBtn: document.getElementById("revealBtn"),
-      nextBtn: document.getElementById("nextBtn"),
-      turnNote: document.getElementById("turnNote"),
-      setupScreen: document.getElementById("setupScreen"),
-      dealScreen: document.getElementById("dealScreen"),
-      backBtn: document.getElementById("backBtn"),
-      rulesBtn: document.getElementById("rulesBtn"),
-      rulesModal: document.getElementById("rulesModal"),
-      rulesBackdrop: document.getElementById("rulesBackdrop"),
-      closeRules: document.getElementById("closeRules"),
+      foods: ["pizza", "burger", "pasta", "sushi", "taco", "burrito", "ramen", "curry", "stew", "fried rice", "paella", "lasagna", "sandwich", "salad", "omelette", "pancakes", "waffles", "bagel", "doughnut", "quiche", "soup", "chowder", "risotto", "meatballs", "roast chicken", "steak", "barbecue ribs", "falafel", "hummus", "shawarma", "kebab", "gyro", "pita", "ceviche", "nachos", "enchilada", "quesadilla", "dumplings", "spring rolls", "bibimbap", "kimchi", "hotpot", "pho", "pad thai", "green curry", "butter chicken", "tandoori", "samosa", "pav bhaji", "pierogi", "gnocchi", "fajitas", "bruschetta", "ratatouille", "gazpacho", "poke bowl", "miso soup", "clam bake", "mac and cheese", "fried chicken"],
+      fruits: ["apple", "banana", "orange", "mango", "pineapple", "strawberry", "blueberry", "raspberry", "blackberry", "cherry", "grape", "watermelon", "cantaloupe", "honeydew", "kiwi", "papaya", "guava", "lychee", "peach", "plum", "apricot", "nectarine", "pear", "pomegranate", "grapefruit", "tangerine", "clementine", "lime", "lemon", "coconut", "fig", "date", "persimmon", "dragonfruit", "starfruit", "passionfruit", "jackfruit", "durian", "cranberry", "boysenberry", "currant", "mulberry", "avocado", "olive", "tomato", "gooseberry", "elderberry", "sapodilla", "longan", "rambutan", "loquat", "soursop", "plantain", "mandarin", "blood orange", "tangelo", "ugli fruit", "quince", "sugar apple", "carambola"],
+      sports: ["soccer", "basketball", "baseball", "softball", "football", "rugby", "cricket", "tennis", "table tennis", "badminton", "volleyball", "beach volleyball", "golf", "hockey", "ice hockey", "field hockey", "lacrosse", "handball", "water polo", "swimming", "diving", "surfing", "sailing", "rowing", "kayaking", "canoeing", "cycling", "mountain biking", "bmx", "track and field", "marathon", "triathlon", "wrestling", "boxing", "kickboxing", "martial arts", "judo", "karate", "taekwondo", "fencing", "archery", "shooting", "skateboarding", "snowboarding", "skiing", "cross-country skiing", "biathlon", "curling", "figure skating", "speed skating", "gymnastics", "cheerleading", "bowling", "darts", "billiards", "squash", "racquetball", "pickleball", "ultimate frisbee", "disc golf"],
+      music: ["guitar", "piano", "violin", "cello", "viola", "double bass", "flute", "clarinet", "saxophone", "trumpet", "trombone", "french horn", "tuba", "drums", "percussion", "xylophone", "marimba", "ukulele", "banjo", "mandolin", "harp", "accordion", "harmonica", "synthesizer", "organ", "bass guitar", "microphone", "choir", "orchestra", "band", "duet", "solo", "chorus", "verse", "bridge", "hook", "melody", "harmony", "rhythm", "tempo", "beat", "scale", "chord", "arpeggio", "riff", "groove", "hip hop", "rock", "pop", "jazz", "blues", "country", "folk", "reggae", "salsa", "merengue", "bachata", "techno", "house", "classical"],
+      highSchoolSubjects: ["algebra", "geometry", "trigonometry", "calculus", "statistics", "precalculus", "algebra 2", "biology", "chemistry", "physics", "earth science", "environmental science", "anatomy", "physiology", "computer science", "programming", "robotics", "engineering", "astronomy", "economics", "microeconomics", "macroeconomics", "world history", "us history", "government", "civics", "psychology", "sociology", "philosophy", "ethics", "english", "literature", "writing", "grammar", "creative writing", "journalism", "public speaking", "debate", "spanish", "french", "german", "chinese", "latin", "art", "drawing", "painting", "sculpture", "music", "choir", "band", "orchestra", "theater", "drama", "health", "physical education", "business", "accounting", "marketing", "entrepreneurship", "finance", "ap calculus", "ap biology", "ap chemistry", "ap physics", "ap statistics", "ap us history", "ap world history", "ap government", "ap psychology", "ap computer science"],
+      geography: ["asia", "europe", "africa", "north america", "south america", "australia", "antarctica", "pacific ocean", "atlantic ocean", "indian ocean", "arctic ocean", "mediterranean sea", "caribbean sea", "gulf of mexico", "sahara desert", "gobi desert", "amazon river", "nile river", "yangtze river", "mississippi river", "mount everest", "andes mountains", "himalayas", "rocky mountains", "alps", "ural mountains", "great lakes", "lake baikal", "lake victoria", "grand canyon", "great barrier reef", "ganges river", "thames river", "danube river", "rhine river", "serengeti", "savanna", "taiga", "tundra", "rainforest", "steppe", "delta", "isthmus", "peninsula", "archipelago", "island", "strait", "fjord", "canyon", "plateau", "valley", "volcano", "glacier", "atoll", "lagoon", "monsoon", "typhoon", "equator", "prime meridian", "tropic of cancer", "tropic of capricorn", "cape"],
+      jobs: ["doctor", "nurse", "surgeon", "paramedic", "pharmacist", "dentist", "veterinarian", "teacher", "professor", "principal", "software engineer", "product manager", "designer", "data scientist", "data analyst", "devops engineer", "systems administrator", "electrician", "plumber", "carpenter", "mechanic", "civil engineer", "architect", "lawyer", "judge", "paralegal", "police officer", "firefighter", "pilot", "flight attendant", "chef", "cook", "baker", "barista", "server", "bartender", "farmer", "rancher", "scientist", "researcher", "lab technician", "accountant", "auditor", "financial analyst", "banker", "investor", "real estate agent", "salesperson", "marketing manager", "social media manager", "journalist", "photographer", "videographer", "actor", "musician", "athlete", "coach", "fitness trainer", "therapist", "psychologist", "counselor", "translator", "interpreter", "delivery driver", "truck driver", "warehouse worker", "construction worker", "security guard", "cashier", "customer support"],
+      history: ["ancient egypt", "mesopotamia", "indus valley", "ancient greece", "roman empire", "byzantine empire", "medieval europe", "renaissance", "age of exploration", "industrial revolution", "american revolution", "french revolution", "civil war", "world war i", "world war ii", "cold war", "fall of the berlin wall", "printing press", "magna carta", "black death", "reformation", "enlightenment", "great depression", "moon landing", "stone age", "bronze age", "iron age", "feudalism", "crusades", "ottoman empire", "mongol empire", "mughal empire", "qing dynasty", "han dynasty", "song dynasty", "tokugawa shogunate", "aztec empire", "maya civilization", "inca empire", "viking age", "age of sail", "silk road", "spice trade", "colonial america", "gold rush", "civil rights movement", "women's suffrage", "space race", "digital revolution", "rise of the internet", "arab spring", "industrial age steam", "railroad expansion", "telegraph invention", "telephone invention", "radio era", "television era", "nuclear age", "exploration of antarctica", "apollo program"],
+      humanBody: ["head", "skull", "brain", "face", "eye", "eyebrow", "eyelash", "ear", "nose", "mouth", "tongue", "tooth", "teeth", "lip", "jaw", "neck", "shoulder", "arm", "elbow", "wrist", "hand", "finger", "thumb", "palm", "chest", "rib", "heart", "lung", "stomach", "liver", "kidney", "spleen", "pancreas", "intestine", "bladder", "spine", "back", "hip", "pelvis", "leg", "thigh", "knee", "calf", "ankle", "foot", "heel", "toe", "skin", "muscle", "bone", "blood", "artery", "vein", "nerve", "tendon", "ligament", "cartilage", "hair", "nail", "immune system", "lymph node", "diaphragm", "esophagus", "trachea", "larynx", "pharynx"],
+      household: ["sofa", "couch", "chair", "armchair", "recliner", "table", "coffee table", "dining table", "desk", "bookshelf", "bed", "mattress", "pillow", "blanket", "duvet", "sheet", "nightstand", "lamp", "floor lamp", "ceiling fan", "tv", "remote control", "router", "modem", "speaker", "headphones", "clock", "mirror", "curtain", "blinds", "rug", "carpet", "doormat", "trash can", "recycling bin", "vacuum", "broom", "mop", "bucket", "spray bottle", "dish soap", "sponge", "dishwasher", "sink", "faucet", "oven", "stove", "microwave", "toaster", "fridge", "freezer", "kettle", "coffee maker", "blender", "cutting board", "knife", "fork", "spoon", "plate", "bowl", "cup", "mug", "napkin", "towel", "laundry basket", "hanger", "closet", "drawer", "cabinet", "pantry"],
+      nature: ["mountain", "river", "lake", "ocean", "sea", "waterfall", "glacier", "volcano", "desert", "forest", "jungle", "rainforest", "savanna", "canyon", "valley", "meadow", "prairie", "dune", "cliff", "cave", "coral reef", "island", "archipelago", "peninsula", "delta", "estuary", "lagoon", "bay", "fjord", "geyser", "hot spring", "iceberg", "aurora", "thunderstorm", "lightning", "rainbow", "eclipse", "hurricane", "tornado", "blizzard", "monsoon", "snowfall", "sunrise", "sunset", "tide", "wave", "oasis", "plateau", "butte", "mesa", "hill", "peak", "ridge", "wetland", "marsh", "swamp", "bog", "mangrove", "steppe", "taiga"],
+      animals: ["dog", "cat", "horse", "cow", "sheep", "goat", "pig", "chicken", "duck", "goose", "turkey", "rabbit", "deer", "moose", "elk", "yak", "camel", "llama", "alpaca", "donkey", "zebra", "giraffe", "elephant", "rhinoceros", "hippopotamus", "lion", "tiger", "leopard", "cheetah", "panther", "bear", "panda", "koala", "kangaroo", "wallaby", "opossum", "sloth", "armadillo", "anteater", "crocodile", "alligator", "turtle", "tortoise", "snake", "lizard", "chameleon", "frog", "toad", "salamander", "dolphin", "whale", "shark", "octopus", "squid", "crab", "lobster", "penguin", "eagle", "owl", "fox"],
+      canada: ["toronto", "montreal", "vancouver", "calgary", "ottawa", "quebec city", "edmonton", "winnipeg", "halifax", "victoria", "saskatoon", "regina", "st john's", "yellowknife", "whitehorse", "nunavut", "pei", "nova scotia", "new brunswick", "manitoba", "saskatchewan", "alberta", "british columbia", "ontario", "quebec", "yukon", "northwest territories", "niagara falls", "cn tower", "parliament hill", "rideau canal", "banff", "jasper", "lake louise", "whistler", "cavendish beach", "bay of fundy", "poutine", "maple syrup", "beaver tail pastry", "nanaimo bar", "butter tart", "hockey night in canada", "tim hortons", "loonie", "toonie", "mountie", "maple leaf", "grey cup", "stanley cup", "curling rink", "lacrosse", "bluenose schooner", "cabot trail", "west edmonton mall", "canada day", "cbc radio", "trans-canada highway", "go train", "skytrain"],
+      china: ["beijing", "shanghai", "guangzhou", "shenzhen", "chengdu", "chongqing", "wuhan", "xi'an", "hangzhou", "suzhou", "nanjing", "tianjin", "qingdao", "dalian", "harbin", "shenyang", "kunming", "lanzhou", "urumqi", "lhasa", "hong kong", "macau", "hainan", "guilin", "yangshuo", "zhangjiajie", "huangshan", "great wall", "forbidden city", "summer palace", "terracotta army", "west lake", "potala palace", "bund", "oriental pearl tower", "pearl river", "yangtze river", "yellow river", "silk road", "panda reserve", "sichuan hotpot", "dim sum", "peking duck", "mooncake", "baozi", "jiaozi", "chow mein", "mapo tofu", "kung pao chicken", "zhajiangmian", "dragon boat festival", "mid-autumn festival", "spring festival", "lantern festival", "qipao", "tai chi", "mahjong", "go", "tea ceremony", "porcelain"]
     };
 
     const state = {
-      totalPlayers: 6,
-      chosenCategory: null,
+      players: 6,
+      category: "random",
       word: null,
       liarIndex: null,
       currentPlayer: 1,
-      active: false,
+      activeScreen: "setup",
+      cardMode: "hidden",
       translationEnabled: false,
-      translationLanguage: "en",
-      categoryTranslationEnabled: false,
-      categoryTranslations: {},
-      cardMode: "idle", // idle | waiting | shown | hidden | ready
-    };
-    const translationCache = {};
-    const uiTranslations = {
-      en: {
-        title: "One Word Imposter",
-        lead: "Simple pass-and-play for 3–20 players. One liar, one secret word.",
-        setup: "Setup",
-        setupHint: "Pick players and a category, then start.",
-        numberLabel: "Number of players (3–20)",
-        liarBadge: "Liar assigned randomly",
-        category: "Category",
-        start: "Start / New Word",
-        startNote: "Pass the device and reveal roles one at a time.",
-        back: "← Setup",
-        deal: "Deal roles",
-        turnNoteIdle: "Press start to pick a word.",
-        turnNoteActive: (p, t) => `Player ${p} of ${t}: tap “Show role”, then hide and pass.`,
-        turnNoteDone: "All roles dealt. Discuss, accuse, then let the liar guess the word.",
-        translateOn: "Translate on",
-        translateOff: "Translate off",
-        translateHelper: "Choose a language, then toggle “Translate” on to see the whole UI and secret words in that language. Toggle off to return to English anytime.",
-        rulesTitle: "Rules",
-        rule1: "Everyone gets the secret word except one liar.",
-        rule2: "Take turns giving short hints about the word.",
-        rule3: "The liar listens, bluffs, and tries to blend in.",
-        rule4: "After a few rounds, discuss and vote who the liar is.",
-        rule5: "If the liar is caught, the group wins; if not, the liar wins — but the liar can also steal the win by guessing the word after votes.",
-        languageLabel: "Language",
-        languagePill: (lang) => `Language: ${lang}`,
-        showRole: "Show role",
-        nextPlayer: "Hide / Next player",
-        waitingTitle: "Waiting…",
-        waitingSub: "Tap “Show role” to begin.",
-        hiddenTitle: "Hidden",
-        hiddenSub: "Pass the device, then tap “Show role”.",
-        readyTitle: "Ready to debate",
-        readySub: "All roles dealt. Close the card and start talking!",
-      }
+      targetLang: "en",
+      cache: {}
     };
 
-    function applyUiTranslations() {
-      const lang = state.translationLanguage || "en";
-      const base = uiTranslations.en;
-      const isEn = lang === "en";
-      const set = (el, text) => { if (el) el.textContent = text; };
-
-      if (!state.translationEnabled || isEn) {
-        set(document.getElementById("titleText"), base.title);
-        set(document.getElementById("leadText"), base.lead);
-        set(document.getElementById("setupTitle"), base.setup);
-        set(document.getElementById("setupHint"), base.setupHint);
-        set(document.getElementById("numberLabel"), base.numberLabel);
-        set(document.getElementById("liarBadge"), base.liarBadge);
-        set(document.getElementById("categoryLabel"), base.category);
-        set(document.getElementById("startBtn"), base.start);
-        set(document.getElementById("startNote"), base.startNote);
-        set(document.getElementById("backBtn"), base.back);
-        set(document.getElementById("dealTitle"), base.deal);
-        set(document.getElementById("rulesTitle"), base.rulesTitle);
-        set(document.getElementById("langLabel"), base.languageLabel);
-        set(document.getElementById("translateHelper"), base.translateHelper);
-        set(document.getElementById("translateBtn"), state.translationEnabled ? base.translateOn : base.translateOff);
-        set(document.getElementById("translateCatsBtn"), state.categoryTranslationEnabled ? base.translateOn : base.translateOff);
-        set(document.getElementById("revealBtn"), base.showRole);
-        set(document.getElementById("nextBtn"), base.nextPlayer);
-        document.querySelectorAll("[data-i18n]").forEach(li => {
-          const key = li.getAttribute("data-i18n");
-          if (base[key]) li.textContent = base[key];
-        });
-        elements.langPill.textContent = base.languagePill(langLabel(lang));
-        renderMeta();
-        renderTurnNote(state.currentPlayer > state.totalPlayers);
-        return;
-      }
-
-      const translateAndSet = (text, el) => {
-        translateWord(text, lang).then(t => set(el, t || text)).catch(() => set(el, text));
-      };
-
-      translateAndSet(base.title, document.getElementById("titleText"));
-      translateAndSet(base.lead, document.getElementById("leadText"));
-      translateAndSet(base.setup, document.getElementById("setupTitle"));
-      translateAndSet(base.setupHint, document.getElementById("setupHint"));
-      translateAndSet(base.numberLabel, document.getElementById("numberLabel"));
-      translateAndSet(base.liarBadge, document.getElementById("liarBadge"));
-      translateAndSet(base.category, document.getElementById("categoryLabel"));
-      translateAndSet(base.start, document.getElementById("startBtn"));
-      translateAndSet(base.startNote, document.getElementById("startNote"));
-      translateAndSet(base.back, document.getElementById("backBtn"));
-      translateAndSet(base.deal, document.getElementById("dealTitle"));
-      translateAndSet(base.rulesTitle, document.getElementById("rulesTitle"));
-      translateAndSet(base.languageLabel, document.getElementById("langLabel"));
-      translateAndSet(base.translateHelper, document.getElementById("translateHelper"));
-      translateAndSet(base.showRole, document.getElementById("revealBtn"));
-      translateAndSet(base.nextPlayer, document.getElementById("nextBtn"));
-      document.querySelectorAll("[data-i18n]").forEach(li => {
-        const key = li.getAttribute("data-i18n");
-        const text = base[key] || li.textContent;
-        translateWord(text, lang).then(t => li.textContent = t || text).catch(() => li.textContent = text);
-      });
-      const tb = state.translationEnabled ? base.translateOn : base.translateOff;
-      const tcb = state.categoryTranslationEnabled ? base.translateOn : base.translateOff;
-      translateWord(tb, lang).then(t => elements.translateBtn.textContent = t || tb).catch(() => elements.translateBtn.textContent = tb);
-      translateWord(tcb, lang).then(t => elements.translateCatsBtn.textContent = t || tcb).catch(() => elements.translateCatsBtn.textContent = tcb);
-      translateWord(base.languagePill(langLabel(lang)), lang).then(t => {
-        elements.langPill.textContent = t || base.languagePill(langLabel(lang));
-      }).catch(() => {
-        elements.langPill.textContent = base.languagePill(langLabel(lang));
-      });
-      renderMeta();
-      renderTurnNote(state.currentPlayer > state.totalPlayers);
-    }
-
-    function randomFrom(array) {
-      return array[Math.floor(Math.random() * array.length)];
-    }
-
-    function pickCategory(name) {
-      if (name === "random") return randomFrom(Object.keys(categories));
-      return name;
-    }
-
-    function playerLabel() {
-      return `Player ${state.currentPlayer} / ${state.totalPlayers}`;
-    }
-
-    function langLabel(code) {
-      switch (code) {
-        case "zh-CN": return "Chinese";
-        case "es": return "Spanish";
-        case "fr": return "French";
-        case "de": return "German";
-        case "ja": return "Japanese";
-        case "ko": return "Korean";
-        case "ar": return "Arabic";
-        case "hi": return "Hindi";
-        default: return "English";
-      }
-    }
-
-    function setTranslationEnabled(on) {
-      state.translationEnabled = on;
-      state.categoryTranslationEnabled = on;
-      const base = uiTranslations.en;
-      const text = on ? base.translateOn : base.translateOff;
-      elements.translateCatsBtn.textContent = text;
-      if (state.translationLanguage === "en") {
-        elements.translateBtn.textContent = text;
-      } else {
-        translateWord(text, state.translationLanguage).then(t => {
-          elements.translateBtn.textContent = t || text;
-          elements.translateCatsBtn.textContent = t || text;
-        }).catch(() => {
-          elements.translateBtn.textContent = text;
-          elements.translateCatsBtn.textContent = text;
-        });
-      }
-      if (!on) {
-        state.categoryTranslations = {};
-        renderCategoryButtons();
-      } else {
-        translateCategories();
-      }
-      refreshCardForState();
-      applyUiTranslations();
-    }
-
-    function setCategoryTranslationEnabled(on) {
-      // keep cat toggle in sync with main translation toggle
-      setTranslationEnabled(on);
-    }
-
-    function setTranslationLanguage(lang) {
-      state.translationLanguage = lang || "en";
-      elements.langPill.textContent = uiTranslations.en.languagePill(langLabel(state.translationLanguage));
-      if (state.translationEnabled) {
-        if (state.translationLanguage !== "en") translateCategories(); else state.categoryTranslations = {};
-        renderCategoryButtons();
-        applyUiTranslations();
-        refreshCardForState();
-      } else {
-        // keep UI English when translation is off
-        state.categoryTranslations = {};
-        renderCategoryButtons();
-        applyUiTranslations();
-        refreshCardForState();
-      }
-    }
-
-    function getCategoryLabel(key) {
-      if (state.translationEnabled && state.categoryTranslationEnabled && state.translationLanguage !== "en" && state.categoryTranslations[key]) {
-        return state.categoryTranslations[key];
-      }
-      if (key === "random") return state.categoryTranslations.random || "Random";
-      return prettyName(key);
-    }
-
-    function refreshCardForState() {
-      if (!state.active) return;
-      const mode = state.cardMode;
-      if (mode === "shown") {
-        refreshCurrentRole();
-        return;
-      }
-      if (mode === "hidden") {
-        renderRoleCard(uiTranslations.en.hiddenTitle, uiTranslations.en.hiddenSub, false, playerLabel());
-        return;
-      }
-      if (mode === "ready") {
-        renderRoleCard(uiTranslations.en.readyTitle, uiTranslations.en.readySub);
-        return;
-      }
-      // waiting or default
-      renderRoleCard(uiTranslations.en.waitingTitle, uiTranslations.en.waitingSub, false, playerLabel());
-    }
-
-    function translateCategories() {
-      if (!state.translationEnabled || state.translationLanguage === "en") {
-        state.categoryTranslations = {};
-        renderCategoryButtons();
-        return;
-      }
-      categoryKeys.forEach(key => {
-        const source = key === "random" ? "Random category" : prettyName(key);
-        translateWord(source, state.translationLanguage).then(translated => {
-          if (translated) {
-            state.categoryTranslations[key] = translated;
-            renderCategoryButtons();
-          }
-        }).catch(() => {
-          // keep existing labels if translation fails
-        });
-      });
-    }
-
-    async function translateWord(word, targetLang = state.translationLanguage) {
-      if (!word) return null;
-      const cacheKey = `${targetLang}:${word}`;
-      if (translationCache[cacheKey]) return translationCache[cacheKey];
-      // Try Google endpoint (unofficial) first, then fall back to Argos.
-      const tryGoogle = async () => {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 6000);
-        const params = new URLSearchParams({
-          client: "gtx",
-          sl: "en",
-          tl: targetLang,
-          dt: "t",
-          q: word,
-        });
-        const res = await fetch(`https://translate.googleapis.com/translate_a/single?${params.toString()}`, {
-          headers: { "Accept": "application/json" },
-          signal: controller.signal,
-        });
-        clearTimeout(timeout);
-        if (!res.ok) throw new Error("google translate failed");
-        const data = await res.json();
-        if (Array.isArray(data) && Array.isArray(data[0]) && Array.isArray(data[0][0])) {
-          return data[0][0][0];
-        }
-        throw new Error("google translate unexpected shape");
-      };
-
-      const tryArgos = async () => {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 6000);
-        const res = await fetch("https://translate.argosopentech.com/translate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Accept": "application/json" },
-          body: JSON.stringify({ q: word, source: "en", target: targetLang.slice(0,2), format: "text" }),
-          signal: controller.signal,
-        });
-        clearTimeout(timeout);
-        if (!res.ok) throw new Error("argos translate failed");
-        const data = await res.json();
-        if (data && data.translatedText) return data.translatedText;
-        throw new Error("argos translate unexpected shape");
-      };
-
-      try {
-        const g = await tryGoogle();
-        translationCache[cacheKey] = g;
-        return g;
-      } catch (err) {
-        console.warn("Google translate failed, falling back", err);
-      }
-
-      try {
-        const a = await tryArgos();
-        translationCache[cacheKey] = a;
-        return a;
-      } catch (err) {
-        console.warn("Argos translate failed", err);
-      }
-
-      translationCache[cacheKey] = "(translation unavailable – check internet)";
-      return translationCache[cacheKey];
-    }
-
-    function refreshCurrentRole() {
-      if (!state.active) return;
-      const showingRole = state.active && elements.revealBtn.disabled && state.currentPlayer <= state.totalPlayers;
-      if (!showingRole) return;
-      const isLiar = state.currentPlayer === state.liarIndex;
-      const categoryText = `Category: ${prettyName(state.chosenCategory)}`;
-      const label = playerLabel();
-      if (state.translationEnabled && state.translationLanguage !== "en") {
-        if (isLiar) {
-          renderRoleCard("Translating…", "Blend in. Listen for clues. Guess the word at the end.", true, label);
-          translateWord("You are the LIAR!", state.translationLanguage).then(translated => {
-            renderRoleCard(translated || "You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
-          }).catch(() => {
-            renderRoleCard("You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
-          });
-        } else {
-          renderRoleCard("Your word: translating…", categoryText, false, label);
-          translateWord(state.word, state.translationLanguage).then(translated => {
-            renderRoleCard(`Your word: ${translated || state.word}`, categoryText, false, label);
-          }).catch(() => {
-            renderRoleCard(`Your word: ${state.word}`, categoryText, false, label);
-          });
-        }
-      } else {
-        if (isLiar) {
-          renderRoleCard("You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
-        } else {
-          renderRoleCard(`Your word: ${state.word}`, categoryText, false, label);
-        }
-      }
-    }
-
-    function showScreen(name) {
-      const isDeal = name === "deal";
-      elements.setupScreen.classList.toggle("hidden", isDeal);
-      elements.dealScreen.classList.toggle("hidden", !isDeal);
-    }
-
-    function renderMeta() {
-      const baseCat = uiTranslations.en.category;
-      const lang = state.translationLanguage;
-      const hasCategory = !!state.chosenCategory;
-      const rawCategory = hasCategory ? prettyName(state.chosenCategory) : "–";
-      const value = state.categoryTranslationEnabled && state.translationEnabled && lang !== "en"
-        ? (state.categoryTranslations[state.chosenCategory] || rawCategory)
-        : rawCategory;
-      const setPill = (labelText) => {
-        elements.categoryPill.textContent = hasCategory
-          ? `${labelText}: ${value || "–"}`
-          : `${labelText}: –`;
-      };
-      if (!state.translationEnabled || lang === "en") {
-        setPill(baseCat);
-        elements.langPill.textContent = uiTranslations.en.languagePill(langLabel(lang));
-      } else {
-        translateWord(baseCat, lang).then(t => setPill(t || baseCat)).catch(() => setPill(baseCat));
-        translateWord(uiTranslations.en.languagePill(langLabel(lang)), lang).then(t => {
-          elements.langPill.textContent = t || uiTranslations.en.languagePill(langLabel(lang));
-        }).catch(() => {
-          elements.langPill.textContent = uiTranslations.en.languagePill(langLabel(lang));
-        });
-      }
-    }
-
-    function startGame() {
-      const total = parseInt(elements.playerCount.value, 10);
-      if (Number.isNaN(total) || total < 3 || total > 20) {
-        alert("Player count must be between 3 and 20.");
-        return;
-      }
-      const selected = pickCategory(elements.categorySelect.value);
-      const word = randomFrom(categories[selected]);
-      state.totalPlayers = total;
-      state.chosenCategory = selected;
-      state.word = word;
-      state.liarIndex = Math.floor(Math.random() * total) + 1;
-      state.currentPlayer = 1;
-      state.active = true;
-      state.cardMode = "waiting";
-      renderMeta();
-      renderTurnNote();
-      renderRoleCard("Waiting…", "Pass the device to Player 1 and tap “Show role”.", false, playerLabel());
-      elements.revealBtn.disabled = false;
-      elements.nextBtn.disabled = true;
-      showScreen("deal");
-    }
-
-    function renderTurnNote(done = false) {
-      const lang = state.translationLanguage;
-      const base = !state.active
-        ? uiTranslations.en.turnNoteIdle
-        : done
-        ? uiTranslations.en.turnNoteDone
-        : uiTranslations.en.turnNoteActive(state.currentPlayer, state.totalPlayers);
-      if (!state.translationEnabled || lang === "en") {
-        elements.turnNote.textContent = base;
-        return;
-      }
-      translateWord(base, lang).then(t => {
-        elements.turnNote.textContent = t || base;
-      }).catch(() => elements.turnNote.textContent = base);
-    }
-
-    function renderRoleCard(title, subtitle, isLiar = false, extra = []) {
-      const extras = Array.isArray(extra) ? extra : (extra ? [extra] : []);
-      const render = (t, s, ex) => {
-        elements.roleCard.innerHTML = `
-          <strong ${isLiar ? 'class="warning"' : ""}>${t}</strong>
-          <span class="${isLiar ? "warning" : "muted"}">${s}</span>
-          ${ex.map(line => `<span class="subline">${line}</span>`).join("")}
-        `;
-      };
-      render(title, subtitle, extras);
-      if (state.translationEnabled && state.translationLanguage !== "en") {
-        const texts = [title, subtitle, ...extras];
-        Promise.all(texts.map(t => translateWord(t, state.translationLanguage).catch(() => t))).then(res => {
-          const [tTitle, tSub, ...tExtras] = res;
-          render(tTitle || title, tSub || subtitle, tExtras.length ? tExtras : extras);
-        });
-      }
-    }
+    const elements = {
+      playerVal: document.getElementById("playerVal"),
+      playerUp: document.getElementById("playerUp"),
+      playerDown: document.getElementById("playerDown"),
+      categoryGrid: document.getElementById("categoryGrid"),
+      startBtn: document.getElementById("startBtn"),
+      setupScreen: document.getElementById("setupScreen"),
+      dealScreen: document.getElementById("dealScreen"),
+      catPill: document.getElementById("catPill"),
+      langPill: document.getElementById("langPill"),
+      cardTitle: document.getElementById("cardTitle"),
+      cardSub: document.getElementById("cardSub"),
+      cardExtra: document.getElementById("cardExtra"),
+      revealBtn: document.getElementById("revealBtn"),
+      nextBtn: document.getElementById("nextBtn"),
+      backBtn: document.getElementById("backBtn"),
+      rulesToggle: document.getElementById("rulesToggle"),
+      rulesModal: document.getElementById("rulesModal"),
+      closeRules: document.getElementById("closeRules"),
+      headerHint: document.getElementById("headerHint"),
+      appTitle: document.getElementById("appTitle"),
+      setupLang: document.getElementById("setupLang"),
+      setupTransToggle: document.getElementById("setupTransToggle")
+    };
 
     function prettyName(key) {
-      switch (key) {
-        case "highSchoolSubjects": return "High school subjects";
-        case "humanBody": return "Human body";
-        case "household": return "Household items";
-        default: return key.charAt(0).toUpperCase() + key.slice(1);
+      if (key === "random") return "Random";
+      if (key === "highSchoolSubjects") return "High school subjects";
+      if (key === "humanBody") return "Human body";
+      return key.charAt(0).toUpperCase() + key.slice(1);
+    }
+
+    // All UI strings that need translation
+    const uiStrings = [
+      "Choose a category", "One Word Imposter", "Start Game", "← Back to Setup",
+      "Rules", "Got it", "Translate on", "Translate off", "Category", "Random",
+      "Hidden", "Pass the device to Player", "Show role", "Ready!",
+      "Discuss and find the liar", "You are the LIAR!", "Listen for clues and blend in",
+      "You know the secret word", "Next player", "Player", "Players",
+      "One person is the imposter and doesn't know the word.",
+      "Everyone else knows the secret word.",
+      "Give one-word hints to prove you aren't the liar.",
+      "Discuss and vote to catch the imposter!",
+      "Translation Helper",
+      "Select a language from the dropdown, then tap",
+      "to see the entire UI and secret words in that language. This helps players who prefer a different language. Toggle off anytime to return to English.",
+      "Foods", "Fruits", "Sports", "Music", "High school subjects", "Geography",
+      "Jobs", "History", "Human body", "Household", "Nature", "Animals", "Canada", "China"
+    ];
+
+    // Translate a single string (with caching)
+    async function translateOne(text, lang) {
+      const cacheKey = `${lang}:${text}`;
+      if (state.cache[cacheKey]) return state.cache[cacheKey];
+      
+      try {
+        const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${lang}&dt=t&q=${encodeURIComponent(text)}`);
+        const data = await res.json();
+        const result = data[0][0][0];
+        state.cache[cacheKey] = result;
+        return result;
+      } catch (e) {
+        console.error("Translation failed for:", text, e);
+        return text;
       }
     }
 
-    function setActiveCategory(value) {
-      elements.categorySelect.value = value;
-      const buttons = elements.categoryGrid.querySelectorAll("[data-cat]");
-      buttons.forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.cat === value);
-      });
+    // Pre-load all UI translations when language changes (parallel requests)
+    async function preloadTranslations() {
+      if (state.targetLang === "en") return;
+      
+      // Collect all strings to translate
+      const allStrings = [...uiStrings];
+      Object.keys(categories).forEach(k => allStrings.push(prettyName(k)));
+      if (state.word) allStrings.push(state.word);
+      
+      // Filter out already cached
+      const uncached = allStrings.filter(s => !state.cache[`${state.targetLang}:${s}`]);
+      
+      // Translate ALL uncached strings in PARALLEL
+      await Promise.all(uncached.map(s => translateOne(s, state.targetLang)));
     }
 
-    function renderCategoryButtons() {
-      const frag = document.createDocumentFragment();
-      categoryKeys.forEach(key => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "category-btn";
-        btn.dataset.cat = key;
-        btn.textContent = getCategoryLabel(key);
-        btn.addEventListener("click", () => setActiveCategory(key));
-        frag.appendChild(btn);
-      });
-      elements.categoryGrid.innerHTML = "";
-      elements.categoryGrid.appendChild(frag);
-      setActiveCategory(elements.categorySelect.value || "random");
+    // Get translation from cache (instant) or return original
+    function t(text) {
+      if (!state.translationEnabled || state.targetLang === "en") return text;
+      return state.cache[`${state.targetLang}:${text}`] || text;
     }
 
-    function revealRole() {
-      if (!state.active) return;
-      if (state.currentPlayer > state.totalPlayers) return;
-      const isLiar = state.currentPlayer === state.liarIndex;
-      const categoryText = `Category: ${prettyName(state.chosenCategory)}`;
-      const label = playerLabel();
-      if (isLiar) {
-        if (state.translationEnabled && state.translationLanguage !== "en") {
-          renderRoleCard("Translating…", "Blend in. Listen for clues. Guess the word at the end.", true, label);
-          translateWord("You are the LIAR!", state.translationLanguage).then(translated => {
-            renderRoleCard(translated || "You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
-          }).catch(() => {
-            renderRoleCard("You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
-          });
-        } else {
-          renderRoleCard("You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
-        }
+    function applyTranslations() {
+      const set = (el, text) => { if (el) el.textContent = text; };
+
+      // Update toggle button immediately
+      elements.setupTransToggle.textContent = state.translationEnabled ? t("Translate on") : t("Translate off");
+      elements.setupTransToggle.classList.toggle("on", state.translationEnabled);
+
+      // All static UI elements - instant from cache
+      set(elements.headerHint, t("Choose a category"));
+      set(elements.appTitle, t("One Word Imposter"));
+      set(elements.startBtn, t("Start Game"));
+      set(elements.backBtn, t("← Back to Setup"));
+      set(document.getElementById("rulesTitle"), t("Rules"));
+      set(document.getElementById("closeRules"), t("Got it"));
+      
+      // Category tiles
+      document.querySelectorAll(".category-tile").forEach(tile => {
+        const raw = tile.getAttribute("data-raw");
+        set(tile, t(raw));
+      });
+
+      // Rules list
+      const baseRules = [
+        "One person is the imposter and doesn't know the word.",
+        "Everyone else knows the secret word.",
+        "Give one-word hints to prove you aren't the liar.",
+        "Discuss and vote to catch the imposter!"
+      ];
+      document.querySelectorAll("#rulesList li").forEach((li, i) => {
+        set(li, t(baseRules[i]));
+      });
+      
+      // Deal screen
+      if (state.activeScreen === "deal") {
+        const catName = state.category === "random" ? "Random" : prettyName(state.category);
+        set(elements.catPill, `${t("Category")}: ${t(catName)}`);
+        set(elements.langPill, state.targetLang.toUpperCase());
+        renderCard();
+      }
+    }
+
+    function renderCard(mode) {
+      if (mode) state.cardMode = mode;
+      const m = state.cardMode;
+      const set = (el, text) => { if (el) el.textContent = text; };
+
+      set(elements.cardExtra, `${t("Player")} ${state.currentPlayer} / ${state.players}`);
+
+      if (m === "hidden") {
+        set(elements.cardTitle, t("Hidden"));
+        set(elements.cardSub, `${t("Pass the device to Player")} ${state.currentPlayer}`);
+        elements.revealBtn.style.display = "block";
+        elements.nextBtn.style.display = "none";
+        set(elements.revealBtn, t("Show role"));
+      } else if (m === "ready") {
+        set(elements.cardTitle, t("Ready!"));
+        set(elements.cardSub, t("Discuss and find the liar"));
+        elements.revealBtn.style.display = "none";
+        elements.nextBtn.style.display = "none";
       } else {
-        const extras = [label];
-        if (state.translationEnabled && state.translationLanguage !== "en") {
-          renderRoleCard("Your word: translating…", categoryText, false, extras);
-          translateWord(state.word, state.translationLanguage).then(translated => {
-            renderRoleCard(`Your word: ${translated || state.word}`, categoryText, false, extras);
-          }).catch(() => {
-            renderRoleCard(`Your word: ${state.word}`, categoryText, false, extras);
-          });
+        const isLiar = state.currentPlayer === state.liarIndex;
+        if (isLiar) {
+          set(elements.cardTitle, t("You are the LIAR!"));
+          set(elements.cardSub, t("Listen for clues and blend in"));
         } else {
-          renderRoleCard(`Your word: ${state.word}`, categoryText, false, extras);
+          set(elements.cardTitle, t(state.word));
+          set(elements.cardSub, t("You know the secret word"));
         }
+        elements.revealBtn.style.display = "none";
+        elements.nextBtn.style.display = "block";
+        set(elements.nextBtn, t("Next player"));
       }
-      elements.revealBtn.disabled = true;
-      elements.nextBtn.disabled = false;
-      state.cardMode = "shown";
     }
 
-    function nextPlayer() {
-      if (!state.active) return;
-      if (state.currentPlayer > state.totalPlayers) return;
-      state.currentPlayer += 1;
-      if (state.currentPlayer > state.totalPlayers) {
-        renderRoleCard("Ready to debate", "All roles dealt. Close the card and start talking!");
-        renderTurnNote(true);
-        elements.revealBtn.disabled = true;
-        elements.nextBtn.disabled = true;
-        state.cardMode = "ready";
-        return;
-      }
-      renderRoleCard("Hidden", "Pass the device, then tap “Show role”.", false, playerLabel());
-      renderTurnNote();
-      elements.revealBtn.disabled = false;
-      elements.nextBtn.disabled = true;
-      state.cardMode = "hidden";
+    function init() {
+      const keys = ["random", ...Object.keys(categories)];
+      elements.categoryGrid.innerHTML = "";
+      keys.forEach(k => {
+        const tile = document.createElement("div");
+        tile.className = `category-tile ${k === state.category ? "active" : ""}`;
+        tile.setAttribute("data-raw", prettyName(k));
+        tile.textContent = prettyName(k);
+        tile.onclick = () => {
+          state.category = k;
+          document.querySelectorAll(".category-tile").forEach(t => t.classList.remove("active"));
+          tile.classList.add("active");
+        };
+        elements.categoryGrid.appendChild(tile);
+      });
+
+      elements.playerUp.onclick = () => { if (state.players < 20) { state.players++; elements.playerVal.textContent = state.players; } };
+      elements.playerDown.onclick = () => { if (state.players > 3) { state.players--; elements.playerVal.textContent = state.players; } };
+      
+      elements.startBtn.onclick = startGame;
+      elements.revealBtn.onclick = () => renderCard("shown");
+      elements.nextBtn.onclick = () => {
+        if (state.currentPlayer < state.players) {
+          state.currentPlayer++;
+          renderCard("hidden");
+        } else {
+          renderCard("ready");
+        }
+      };
+      elements.backBtn.onclick = () => { 
+        state.activeScreen = "setup";
+        elements.setupScreen.classList.add("active");
+        elements.dealScreen.classList.remove("active");
+        elements.headerHint.style.display = "block";
+        state.currentPlayer = 1;
+        applyTranslations();
+      };
+      
+      elements.rulesToggle.onclick = () => elements.rulesModal.classList.add("active");
+      elements.closeRules.onclick = () => elements.rulesModal.classList.remove("active");
+      
+      // When language changes: preload translations in background
+      elements.setupLang.onchange = async (e) => { 
+        state.targetLang = e.target.value; 
+        await preloadTranslations();
+        if (state.translationEnabled) applyTranslations();
+      };
+      
+      // Toggle - preload if needed, then apply instantly
+      elements.setupTransToggle.onclick = async () => { 
+        state.translationEnabled = !state.translationEnabled;
+        if (state.translationEnabled && state.targetLang !== "en") {
+          await preloadTranslations();
+        }
+        applyTranslations(); 
+      };
+
+      applyTranslations();
     }
 
-    elements.startBtn.addEventListener("click", startGame);
-    elements.revealBtn.addEventListener("click", revealRole);
-    elements.nextBtn.addEventListener("click", nextPlayer);
-    elements.translateBtn.addEventListener("click", () => {
-      const enable = !state.translationEnabled;
-      setTranslationEnabled(enable);
-      refreshCardForState();
-    });
-    elements.translateCatsBtn.addEventListener("click", () => {
-      const enable = !state.categoryTranslationEnabled;
-      setCategoryTranslationEnabled(enable);
-    });
-    elements.langSelect.addEventListener("change", (e) => {
-      setTranslationLanguage(e.target.value);
-    });
-    function resetGame() {
-      state.active = false;
-      state.word = null;
-      state.chosenCategory = null;
-      state.liarIndex = null;
+    async function startGame() {
+      let finalCat = state.category;
+      if (finalCat === "random") {
+        const keys = Object.keys(categories);
+        finalCat = keys[Math.floor(Math.random() * keys.length)];
+      }
+      state.chosenCategory = finalCat;
+      const wordList = categories[finalCat];
+      state.word = wordList[Math.floor(Math.random() * wordList.length)];
+      state.liarIndex = Math.floor(Math.random() * state.players) + 1;
       state.currentPlayer = 1;
-      state.cardMode = "waiting";
-      elements.revealBtn.disabled = true;
-      elements.nextBtn.disabled = true;
-      // Force English UI when resetting; do not trigger translation calls.
-      state.translationEnabled = false;
-      state.categoryTranslationEnabled = false;
-      state.translationLanguage = "en";
-      state.categoryTranslations = {};
-      elements.translateBtn.textContent = uiTranslations.en.translateOff;
-      elements.translateCatsBtn.textContent = uiTranslations.en.translateOff;
-      elements.langSelect.value = "en";
-      applyUiTranslations();
-      renderCategoryButtons();
-      renderMeta();
-      renderTurnNote();
-      renderRoleCard(uiTranslations.en.waitingTitle, uiTranslations.en.waitingSub, false, playerLabel());
-      showScreen("setup");
+      
+      // Pre-translate the word if translation is on
+      if (state.translationEnabled && state.targetLang !== "en") {
+        await translateOne(state.word, state.targetLang);
+      }
+      
+      state.activeScreen = "deal";
+      elements.setupScreen.classList.remove("active");
+      elements.dealScreen.classList.add("active");
+      elements.headerHint.style.display = "none";
+      
+      renderCard("hidden");
+      applyTranslations();
     }
 
-    // Ensure the back button always triggers the reset.
-    elements.backBtn.replaceWith(elements.backBtn.cloneNode(true));
-    document.getElementById("backBtn").addEventListener("click", resetGame);
-    elements.rulesBtn.addEventListener("click", () => elements.rulesModal.classList.remove("hidden"));
-    elements.rulesBackdrop.addEventListener("click", () => elements.rulesModal.classList.add("hidden"));
-    elements.closeRules.addEventListener("click", () => elements.rulesModal.classList.add("hidden"));
-
-    // Initialize defaults.
-    renderCategoryButtons();
-    setTranslationEnabled(false);
-    setCategoryTranslationEnabled(false);
-    setTranslationLanguage("en");
-    applyUiTranslations();
-    renderMeta();
-    renderTurnNote();
-    elements.revealBtn.disabled = true;
-    elements.nextBtn.disabled = true;
+    init();
   </script>
 </body>
 </html>
-
