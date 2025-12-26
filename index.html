@@ -290,6 +290,22 @@
             <p class="muted" style="margin:6px 0 0;">Pick players and a category, then start.</p>
           </div>
           <div class="stack">
+            <div class="inline spread" style="align-items:center;">
+              <label for="langSelect">Language</label>
+              <select id="langSelect" style="width:auto; min-width: 200px;">
+                <option value="en">English (default)</option>
+                <option value="zh-CN">Chinese (Simplified)</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="ja">Japanese</option>
+                <option value="ko">Korean</option>
+                <option value="ar">Arabic</option>
+                <option value="hi">Hindi</option>
+              </select>
+            </div>
+          </div>
+          <div class="stack">
             <label for="playerCount">Number of players (3–20)</label>
             <div class="inline">
               <input id="playerCount" type="number" min="3" max="20" value="6" />
@@ -331,6 +347,7 @@
         <div class="inline spread" style="align-items:center; gap:8px;">
           <button id="backBtn" class="ghost" style="width:auto;">← Setup</button>
           <div class="pill" id="categoryPill">Category: –</div>
+          <div class="pill" id="langPill">Language: English</div>
           <div class="inline" style="gap:8px; flex-wrap:nowrap;">
             <button id="translateBtn" class="ghost" style="width:auto;">中 / EN</button>
           </div>
@@ -495,8 +512,10 @@
       categorySelect: document.getElementById("categorySelect"),
       categoryGrid: document.getElementById("categoryGrid"),
       translateCatsBtn: document.getElementById("translateCatsBtn"),
+      langSelect: document.getElementById("langSelect"),
       startBtn: document.getElementById("startBtn"),
       categoryPill: document.getElementById("categoryPill"),
+      langPill: document.getElementById("langPill"),
       translateBtn: document.getElementById("translateBtn"),
       roleCard: document.getElementById("roleCard"),
       revealBtn: document.getElementById("revealBtn"),
@@ -519,6 +538,7 @@
       currentPlayer: 1,
       active: false,
       translationEnabled: false,
+      translationLanguage: "en",
       categoryTranslationEnabled: false,
       categoryTranslations: {},
     };
@@ -537,15 +557,30 @@
       return `Player ${state.currentPlayer} / ${state.totalPlayers}`;
     }
 
+    function langLabel(code) {
+      switch (code) {
+        case "zh-CN": return "Chinese";
+        case "es": return "Spanish";
+        case "fr": return "French";
+        case "de": return "German";
+        case "ja": return "Japanese";
+        case "ko": return "Korean";
+        case "ar": return "Arabic";
+        case "hi": return "Hindi";
+        default: return "English";
+      }
+    }
+
     function setTranslationEnabled(on) {
       state.translationEnabled = on;
-      elements.translateBtn.textContent = on ? "Chinese on" : "中 / EN";
+      elements.translateBtn.textContent = on ? "Translate on" : "Translate off";
+      refreshCurrentRole();
     }
 
     function setCategoryTranslationEnabled(on) {
       state.categoryTranslationEnabled = on;
-      elements.translateCatsBtn.textContent = on ? "Chinese on" : "中 / EN";
-      if (!on) {
+      elements.translateCatsBtn.textContent = on ? "Translate on" : "Translate off";
+      if (!on || state.translationLanguage === "en") {
         state.categoryTranslations = {};
         renderCategoryButtons();
         return;
@@ -553,20 +588,35 @@
       translateCategories();
     }
 
+    function setTranslationLanguage(lang) {
+      state.translationLanguage = lang || "en";
+      elements.langPill.textContent = `Language: ${langLabel(state.translationLanguage)}`;
+      if (state.categoryTranslationEnabled && state.translationLanguage !== "en") {
+        translateCategories();
+      } else {
+        state.categoryTranslations = {};
+        renderCategoryButtons();
+      }
+      refreshCurrentRole();
+    }
+
     function getCategoryLabel(key) {
-      if (key === "random") return state.categoryTranslationEnabled && state.categoryTranslations.random
-        ? state.categoryTranslations.random
-        : "Random";
-      if (state.categoryTranslationEnabled && state.categoryTranslations[key]) {
+      if (state.categoryTranslationEnabled && state.translationLanguage !== "en" && state.categoryTranslations[key]) {
         return state.categoryTranslations[key];
       }
+      if (key === "random") return state.categoryTranslations.random || "Random";
       return prettyName(key);
     }
 
     function translateCategories() {
+      if (state.translationLanguage === "en") {
+        state.categoryTranslations = {};
+        renderCategoryButtons();
+        return;
+      }
       categoryKeys.forEach(key => {
         const source = key === "random" ? "Random category" : prettyName(key);
-        translateWord(source).then(translated => {
+        translateWord(source, state.translationLanguage).then(translated => {
           if (translated) {
             state.categoryTranslations[key] = translated;
             renderCategoryButtons();
@@ -577,9 +627,10 @@
       });
     }
 
-    async function translateWord(word) {
+    async function translateWord(word, targetLang = state.translationLanguage) {
       if (!word) return null;
-      if (translationCache[word]) return translationCache[word];
+      const cacheKey = `${targetLang}:${word}`;
+      if (translationCache[cacheKey]) return translationCache[cacheKey];
       // Try Google endpoint (unofficial) first, then fall back to Argos.
       const tryGoogle = async () => {
         const controller = new AbortController();
@@ -587,7 +638,7 @@
         const params = new URLSearchParams({
           client: "gtx",
           sl: "en",
-          tl: "zh-CN",
+          tl: targetLang,
           dt: "t",
           q: word,
         });
@@ -610,7 +661,7 @@
         const res = await fetch("https://translate.argosopentech.com/translate", {
           method: "POST",
           headers: { "Content-Type": "application/json", "Accept": "application/json" },
-          body: JSON.stringify({ q: word, source: "en", target: "zh", format: "text" }),
+          body: JSON.stringify({ q: word, source: "en", target: targetLang.slice(0,2), format: "text" }),
           signal: controller.signal,
         });
         clearTimeout(timeout);
@@ -622,7 +673,7 @@
 
       try {
         const g = await tryGoogle();
-        translationCache[word] = g;
+        translationCache[cacheKey] = g;
         return g;
       } catch (err) {
         console.warn("Google translate failed, falling back", err);
@@ -630,14 +681,46 @@
 
       try {
         const a = await tryArgos();
-        translationCache[word] = a;
+        translationCache[cacheKey] = a;
         return a;
       } catch (err) {
         console.warn("Argos translate failed", err);
       }
 
-      translationCache[word] = "(translation unavailable – check internet)";
-      return translationCache[word];
+      translationCache[cacheKey] = "(translation unavailable – check internet)";
+      return translationCache[cacheKey];
+    }
+
+    function refreshCurrentRole() {
+      if (!state.active) return;
+      const showingRole = state.active && elements.revealBtn.disabled && state.currentPlayer <= state.totalPlayers;
+      if (!showingRole) return;
+      const isLiar = state.currentPlayer === state.liarIndex;
+      const categoryText = `Category: ${prettyName(state.chosenCategory)}`;
+      const label = playerLabel();
+      if (state.translationEnabled && state.translationLanguage !== "en") {
+        if (isLiar) {
+          renderRoleCard("Translating…", "Blend in. Listen for clues. Guess the word at the end.", true, label);
+          translateWord("You are the LIAR!", state.translationLanguage).then(translated => {
+            renderRoleCard(translated || "You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
+          }).catch(() => {
+            renderRoleCard("You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
+          });
+        } else {
+          renderRoleCard("Your word: translating…", categoryText, false, label);
+          translateWord(state.word, state.translationLanguage).then(translated => {
+            renderRoleCard(`Your word: ${translated || state.word}`, categoryText, false, label);
+          }).catch(() => {
+            renderRoleCard(`Your word: ${state.word}`, categoryText, false, label);
+          });
+        }
+      } else {
+        if (isLiar) {
+          renderRoleCard("You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
+        } else {
+          renderRoleCard(`Your word: ${state.word}`, categoryText, false, label);
+        }
+      }
     }
 
     function showScreen(name) {
@@ -650,6 +733,7 @@
       elements.categoryPill.textContent = state.chosenCategory
         ? `Category: ${prettyName(state.chosenCategory)}`
         : "Category: –";
+      elements.langPill.textContent = `Language: ${langLabel(state.translationLanguage)}`;
     }
 
     function startGame() {
@@ -735,9 +819,9 @@
       const categoryText = `Category: ${prettyName(state.chosenCategory)}`;
       const label = playerLabel();
       if (isLiar) {
-        if (state.translationEnabled) {
+        if (state.translationEnabled && state.translationLanguage !== "en") {
           renderRoleCard("Translating…", "Blend in. Listen for clues. Guess the word at the end.", true, label);
-          translateWord("You are the LIAR!").then(translated => {
+          translateWord("You are the LIAR!", state.translationLanguage).then(translated => {
             renderRoleCard(translated || "You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
           }).catch(() => {
             renderRoleCard("You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
@@ -747,9 +831,9 @@
         }
       } else {
         const extras = [label];
-        if (state.translationEnabled) {
+        if (state.translationEnabled && state.translationLanguage !== "en") {
           renderRoleCard("Your word: translating…", categoryText, false, extras);
-          translateWord(state.word).then(translated => {
+          translateWord(state.word, state.translationLanguage).then(translated => {
             renderRoleCard(`Your word: ${translated || state.word}`, categoryText, false, extras);
           }).catch(() => {
             renderRoleCard(`Your word: ${state.word}`, categoryText, false, extras);
@@ -793,14 +877,14 @@
       if (enable) {
         if (isLiar) {
           renderRoleCard("Translating…", "Blend in. Listen for clues. Guess the word at the end.", true, label);
-          translateWord("You are the LIAR!").then(translated => {
+          translateWord("You are the LIAR!", state.translationLanguage).then(translated => {
             renderRoleCard(translated || "You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
           }).catch(() => {
             renderRoleCard("You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
           });
         } else {
           renderRoleCard("Your word: translating…", categoryText, false, label);
-          translateWord(state.word).then(translated => {
+          translateWord(state.word, state.translationLanguage).then(translated => {
             renderRoleCard(`Your word: ${translated || state.word}`, categoryText, false, label);
           }).catch(() => {
             renderRoleCard(`Your word: ${state.word}`, categoryText, false, label);
@@ -817,6 +901,9 @@
     elements.translateCatsBtn.addEventListener("click", () => {
       const enable = !state.categoryTranslationEnabled;
       setCategoryTranslationEnabled(enable);
+    });
+    elements.langSelect.addEventListener("change", (e) => {
+      setTranslationLanguage(e.target.value);
     });
     elements.backBtn.addEventListener("click", () => {
       state.active = false;
@@ -839,6 +926,7 @@
     renderCategoryButtons();
     setTranslationEnabled(false);
     setCategoryTranslationEnabled(false);
+    setTranslationLanguage("en");
     renderMeta();
     renderTurnNote();
     elements.revealBtn.disabled = true;
