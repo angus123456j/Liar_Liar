@@ -569,6 +569,14 @@
         rule5: "If the liar is caught, the group wins; if not, the liar wins — but the liar can also steal the win by guessing the word after votes.",
         languageLabel: "Language",
         languagePill: (lang) => `Language: ${lang}`,
+        showRole: "Show role",
+        nextPlayer: "Hide / Next player",
+        waitingTitle: "Waiting…",
+        waitingSub: "Tap “Show role” to begin.",
+        hiddenTitle: "Hidden",
+        hiddenSub: "Pass the device, then tap “Show role”.",
+        readyTitle: "Ready to debate",
+        readySub: "All roles dealt. Close the card and start talking!",
       }
     };
 
@@ -578,7 +586,7 @@
       const isEn = lang === "en";
       const set = (el, text) => { if (el) el.textContent = text; };
 
-      if (isEn) {
+      if (!state.translationEnabled || isEn) {
         set(document.getElementById("titleText"), base.title);
         set(document.getElementById("leadText"), base.lead);
         set(document.getElementById("setupTitle"), base.setup);
@@ -592,12 +600,14 @@
         set(document.getElementById("dealTitle"), base.deal);
         set(document.getElementById("rulesTitle"), base.rulesTitle);
         set(document.getElementById("langLabel"), base.languageLabel);
+        set(document.getElementById("translateBtn"), state.translationEnabled ? base.translateOn : base.translateOff);
+        set(document.getElementById("translateCatsBtn"), state.categoryTranslationEnabled ? base.translateOn : base.translateOff);
+        set(document.getElementById("revealBtn"), base.showRole);
+        set(document.getElementById("nextBtn"), base.nextPlayer);
         document.querySelectorAll("[data-i18n]").forEach(li => {
           const key = li.getAttribute("data-i18n");
           if (base[key]) li.textContent = base[key];
         });
-        elements.translateBtn.textContent = state.translationEnabled ? base.translateOn : base.translateOff;
-        elements.translateCatsBtn.textContent = state.categoryTranslationEnabled ? base.translateOn : base.translateOff;
         elements.langPill.textContent = base.languagePill(langLabel(lang));
         renderMeta();
         renderTurnNote(state.currentPlayer > state.totalPlayers);
@@ -621,6 +631,8 @@
       translateAndSet(base.deal, document.getElementById("dealTitle"));
       translateAndSet(base.rulesTitle, document.getElementById("rulesTitle"));
       translateAndSet(base.languageLabel, document.getElementById("langLabel"));
+      translateAndSet(base.showRole, document.getElementById("revealBtn"));
+      translateAndSet(base.nextPlayer, document.getElementById("nextBtn"));
       document.querySelectorAll("[data-i18n]").forEach(li => {
         const key = li.getAttribute("data-i18n");
         const text = base[key] || li.textContent;
@@ -668,53 +680,55 @@
 
     function setTranslationEnabled(on) {
       state.translationEnabled = on;
+      state.categoryTranslationEnabled = on;
       const base = uiTranslations.en;
       const text = on ? base.translateOn : base.translateOff;
+      elements.translateCatsBtn.textContent = text;
       if (state.translationLanguage === "en") {
         elements.translateBtn.textContent = text;
       } else {
         translateWord(text, state.translationLanguage).then(t => {
           elements.translateBtn.textContent = t || text;
-        }).catch(() => elements.translateBtn.textContent = text);
+          elements.translateCatsBtn.textContent = t || text;
+        }).catch(() => {
+          elements.translateBtn.textContent = text;
+          elements.translateCatsBtn.textContent = text;
+        });
+      }
+      if (!on) {
+        state.categoryTranslations = {};
+        renderCategoryButtons();
+      } else {
+        translateCategories();
       }
       refreshCurrentRole();
       applyUiTranslations();
     }
 
     function setCategoryTranslationEnabled(on) {
-      state.categoryTranslationEnabled = on;
-      const base = uiTranslations.en;
-      const text = on ? base.translateOn : base.translateOff;
-      if (state.translationLanguage === "en") {
-        elements.translateCatsBtn.textContent = text;
-      } else {
-        translateWord(text, state.translationLanguage).then(t => {
-          elements.translateCatsBtn.textContent = t || text;
-        }).catch(() => elements.translateCatsBtn.textContent = text);
-      }
-      if (!on || state.translationLanguage === "en") {
-        state.categoryTranslations = {};
-        renderCategoryButtons();
-        return;
-      }
-      translateCategories();
+      // keep cat toggle in sync with main translation toggle
+      setTranslationEnabled(on);
     }
 
     function setTranslationLanguage(lang) {
       state.translationLanguage = lang || "en";
       elements.langPill.textContent = uiTranslations.en.languagePill(langLabel(state.translationLanguage));
-      if (state.categoryTranslationEnabled && state.translationLanguage !== "en") {
-        translateCategories();
+      if (state.translationEnabled) {
+        if (state.translationLanguage !== "en") translateCategories(); else state.categoryTranslations = {};
+        renderCategoryButtons();
+        applyUiTranslations();
+        refreshCurrentRole();
       } else {
+        // keep UI English when translation is off
         state.categoryTranslations = {};
         renderCategoryButtons();
+        applyUiTranslations();
+        refreshCurrentRole();
       }
-      applyUiTranslations();
-      refreshCurrentRole();
     }
 
     function getCategoryLabel(key) {
-      if (state.categoryTranslationEnabled && state.translationLanguage !== "en" && state.categoryTranslations[key]) {
+      if (state.translationEnabled && state.categoryTranslationEnabled && state.translationLanguage !== "en" && state.categoryTranslations[key]) {
         return state.categoryTranslations[key];
       }
       if (key === "random") return state.categoryTranslations.random || "Random";
@@ -722,7 +736,7 @@
     }
 
     function translateCategories() {
-      if (state.translationLanguage === "en") {
+      if (!state.translationEnabled || state.translationLanguage === "en") {
         state.categoryTranslations = {};
         renderCategoryButtons();
         return;
@@ -845,10 +859,7 @@
     function renderMeta() {
       const baseCat = uiTranslations.en.category;
       const lang = state.translationLanguage;
-      const catLabel = (state.categoryTranslationEnabled && lang !== "en" && state.categoryTranslations[state.chosenCategory])
-        ? state.categoryTranslations[state.chosenCategory]
-        : baseCat;
-      const value = state.categoryTranslationEnabled && lang !== "en"
+      const value = state.categoryTranslationEnabled && state.translationEnabled && lang !== "en"
         ? (state.categoryTranslations[state.chosenCategory] || prettyName(state.chosenCategory))
         : prettyName(state.chosenCategory);
       const setPill = (labelText) => {
@@ -856,16 +867,17 @@
           ? `${labelText}: ${value || "–"}`
           : `${labelText}: –`;
       };
-      if (lang === "en") {
-        setPill(catLabel);
+      if (!state.translationEnabled || lang === "en") {
+        setPill(baseCat);
+        elements.langPill.textContent = uiTranslations.en.languagePill(langLabel(lang));
       } else {
         translateWord(baseCat, lang).then(t => setPill(t || baseCat)).catch(() => setPill(baseCat));
+        translateWord(uiTranslations.en.languagePill(langLabel(lang)), lang).then(t => {
+          elements.langPill.textContent = t || uiTranslations.en.languagePill(langLabel(lang));
+        }).catch(() => {
+          elements.langPill.textContent = uiTranslations.en.languagePill(langLabel(lang));
+        });
       }
-      translateWord(uiTranslations.en.languagePill(langLabel(lang)), lang).then(t => {
-        elements.langPill.textContent = t || uiTranslations.en.languagePill(langLabel(lang));
-      }).catch(() => {
-        elements.langPill.textContent = uiTranslations.en.languagePill(langLabel(lang));
-      });
     }
 
     function startGame() {
@@ -891,45 +903,38 @@
     }
 
     function renderTurnNote(done = false) {
-      if (!state.active) {
-        const base = uiTranslations.en.turnNoteIdle;
-        if (state.translationLanguage !== "en") {
-          translateWord(base, state.translationLanguage).then(t => {
-            elements.turnNote.textContent = t || base;
-          }).catch(() => elements.turnNote.textContent = base);
-        } else {
-          elements.turnNote.textContent = base;
-        }
+      const lang = state.translationLanguage;
+      const base = !state.active
+        ? uiTranslations.en.turnNoteIdle
+        : done
+        ? uiTranslations.en.turnNoteDone
+        : uiTranslations.en.turnNoteActive(state.currentPlayer, state.totalPlayers);
+      if (!state.translationEnabled || lang === "en") {
+        elements.turnNote.textContent = base;
         return;
       }
-      if (done) {
-        const base = uiTranslations.en.turnNoteDone;
-        if (state.translationLanguage !== "en") {
-          translateWord(base, state.translationLanguage).then(t => {
-            elements.turnNote.textContent = t || base;
-          }).catch(() => elements.turnNote.textContent = base);
-        } else {
-          elements.turnNote.textContent = base;
-        }
-      } else {
-        const base = uiTranslations.en.turnNoteActive(state.currentPlayer, state.totalPlayers);
-        if (state.translationLanguage !== "en") {
-          translateWord(base, state.translationLanguage).then(t => {
-            elements.turnNote.textContent = t || base;
-          }).catch(() => elements.turnNote.textContent = base);
-        } else {
-          elements.turnNote.textContent = base;
-        }
-      }
+      translateWord(base, lang).then(t => {
+        elements.turnNote.textContent = t || base;
+      }).catch(() => elements.turnNote.textContent = base);
     }
 
     function renderRoleCard(title, subtitle, isLiar = false, extra = []) {
       const extras = Array.isArray(extra) ? extra : (extra ? [extra] : []);
-      elements.roleCard.innerHTML = `
-        <strong ${isLiar ? 'class="warning"' : ""}>${title}</strong>
-        <span class="${isLiar ? "warning" : "muted"}">${subtitle}</span>
-        ${extras.map(line => `<span class="subline">${line}</span>`).join("")}
-      `;
+      const render = (t, s, ex) => {
+        elements.roleCard.innerHTML = `
+          <strong ${isLiar ? 'class="warning"' : ""}>${t}</strong>
+          <span class="${isLiar ? "warning" : "muted"}">${s}</span>
+          ${ex.map(line => `<span class="subline">${line}</span>`).join("")}
+        `;
+      };
+      render(title, subtitle, extras);
+      if (state.translationEnabled && state.translationLanguage !== "en") {
+        const texts = [title, subtitle, ...extras];
+        Promise.all(texts.map(t => translateWord(t, state.translationLanguage).catch(() => t))).then(res => {
+          const [tTitle, tSub, ...tExtras] = res;
+          render(tTitle || title, tSub || subtitle, tExtras.length ? tExtras : extras);
+        });
+      }
     }
 
     function prettyName(key) {
