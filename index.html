@@ -279,7 +279,7 @@
         <h1 id="titleText">Guess the Liar</h1>
         <p class="lead" id="leadText">Simple pass-and-play for 3–20 players. One liar, one secret word.</p>
       </div>
-      <button id="rulesBtn" class="ghost" style="width:auto; padding:10px 14px;">Rules</button>
+          <button id="rulesBtn" type="button" class="ghost" style="width:auto; padding:10px 14px;">Rules</button>
     </div>
 
     <section id="setupScreen" class="screen">
@@ -315,7 +315,7 @@
           <div class="stack">
             <div class="inline spread" style="align-items:center;">
               <label for="categorySelect" id="categoryLabel">Category</label>
-              <button id="translateCatsBtn" class="ghost" style="width:auto;">中 / EN</button>
+              <button id="translateCatsBtn" type="button" class="ghost" style="width:auto;">中 / EN</button>
             </div>
             <div class="category-grid" id="categoryGrid"></div>
             <select id="categorySelect" class="sr-only">
@@ -336,7 +336,7 @@
               <option value="china">China</option>
             </select>
           </div>
-          <button id="startBtn" style="font-size:18px; padding:16px;">Start / New Word</button>
+          <button id="startBtn" type="button" style="font-size:18px; padding:16px;">Start / New Word</button>
           <p class="muted center" id="startNote" style="margin:0;">Pass the device and reveal roles one at a time.</p>
         </div>
       </div>
@@ -345,11 +345,11 @@
     <section id="dealScreen" class="screen hidden">
       <div class="card">
         <div class="inline spread" style="align-items:center; gap:8px;">
-          <button id="backBtn" class="ghost" style="width:auto;">← Setup</button>
+          <button id="backBtn" type="button" class="ghost" style="width:auto;">← Setup</button>
           <div class="pill" id="categoryPill">Category: –</div>
           <div class="pill" id="langPill">Language: English</div>
           <div class="inline" style="gap:8px; flex-wrap:nowrap;">
-            <button id="translateBtn" class="ghost" style="width:auto;">Translate off</button>
+            <button id="translateBtn" type="button" class="ghost" style="width:auto;">Translate off</button>
           </div>
         </div>
         <div class="divider"></div>
@@ -362,8 +362,8 @@
         </div>
         <div style="height: 12px;"></div>
         <div class="inline">
-          <button id="revealBtn">Show role</button>
-          <button id="nextBtn" class="ghost">Hide / Next player</button>
+          <button id="revealBtn" type="button">Show role</button>
+          <button id="nextBtn" type="button" class="ghost">Hide / Next player</button>
         </div>
       </div>
     </section>
@@ -374,7 +374,7 @@
     <div class="modal-panel">
       <div class="inline spread" style="align-items:center;">
         <h3 style="margin:0;" id="rulesTitle">Rules</h3>
-        <button id="closeRules" class="ghost" style="width:auto;">✕</button>
+        <button id="closeRules" type="button" class="ghost" style="width:auto;">✕</button>
       </div>
       <ol class="rules-list" id="rulesList">
         <li data-i18n="rule1">Everyone gets the secret word except one liar.</li>
