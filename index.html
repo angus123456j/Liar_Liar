@@ -276,7 +276,7 @@
   <div class="container">
     <div class="topbar">
       <div>
-        <h1 id="titleText">Guess the Liar</h1>
+        <h1 id="titleText">One Word Imposter</h1>
         <p class="lead" id="leadText">Simple pass-and-play for 3–20 players. One liar, one secret word.</p>
       </div>
           <button id="rulesBtn" type="button" class="ghost" style="width:auto; padding:10px 14px;">Rules</button>
@@ -288,6 +288,12 @@
           <div>
             <h3 id="setupTitle">Setup</h3>
             <p class="muted" id="setupHint" style="margin:6px 0 0;">Pick players and a category, then start.</p>
+          </div>
+          <div class="stack">
+            <h4 style="margin:4px 0 4px;">Translation helper</h4>
+            <p class="muted" id="translateHelper" style="margin:0;">
+              Choose a language, then toggle “Translate” on to see the whole UI and secret words in that language. Toggle off to return to English anytime.
+            </p>
           </div>
           <div class="stack">
             <div class="inline spread" style="align-items:center;">
@@ -541,11 +547,12 @@
       translationLanguage: "en",
       categoryTranslationEnabled: false,
       categoryTranslations: {},
+      cardMode: "idle", // idle | waiting | shown | hidden | ready
     };
     const translationCache = {};
     const uiTranslations = {
       en: {
-        title: "Guess the Liar",
+        title: "One Word Imposter",
         lead: "Simple pass-and-play for 3–20 players. One liar, one secret word.",
         setup: "Setup",
         setupHint: "Pick players and a category, then start.",
@@ -561,6 +568,7 @@
         turnNoteDone: "All roles dealt. Discuss, accuse, then let the liar guess the word.",
         translateOn: "Translate on",
         translateOff: "Translate off",
+        translateHelper: "Choose a language, then toggle “Translate” on to see the whole UI and secret words in that language. Toggle off to return to English anytime.",
         rulesTitle: "Rules",
         rule1: "Everyone gets the secret word except one liar.",
         rule2: "Take turns giving short hints about the word.",
@@ -600,6 +608,7 @@
         set(document.getElementById("dealTitle"), base.deal);
         set(document.getElementById("rulesTitle"), base.rulesTitle);
         set(document.getElementById("langLabel"), base.languageLabel);
+        set(document.getElementById("translateHelper"), base.translateHelper);
         set(document.getElementById("translateBtn"), state.translationEnabled ? base.translateOn : base.translateOff);
         set(document.getElementById("translateCatsBtn"), state.categoryTranslationEnabled ? base.translateOn : base.translateOff);
         set(document.getElementById("revealBtn"), base.showRole);
@@ -631,6 +640,7 @@
       translateAndSet(base.deal, document.getElementById("dealTitle"));
       translateAndSet(base.rulesTitle, document.getElementById("rulesTitle"));
       translateAndSet(base.languageLabel, document.getElementById("langLabel"));
+      translateAndSet(base.translateHelper, document.getElementById("translateHelper"));
       translateAndSet(base.showRole, document.getElementById("revealBtn"));
       translateAndSet(base.nextPlayer, document.getElementById("nextBtn"));
       document.querySelectorAll("[data-i18n]").forEach(li => {
@@ -701,7 +711,7 @@
       } else {
         translateCategories();
       }
-      refreshCurrentRole();
+      refreshCardForState();
       applyUiTranslations();
     }
 
@@ -717,13 +727,13 @@
         if (state.translationLanguage !== "en") translateCategories(); else state.categoryTranslations = {};
         renderCategoryButtons();
         applyUiTranslations();
-        refreshCurrentRole();
+        refreshCardForState();
       } else {
         // keep UI English when translation is off
         state.categoryTranslations = {};
         renderCategoryButtons();
         applyUiTranslations();
-        refreshCurrentRole();
+        refreshCardForState();
       }
     }
 
@@ -733,6 +743,25 @@
       }
       if (key === "random") return state.categoryTranslations.random || "Random";
       return prettyName(key);
+    }
+
+    function refreshCardForState() {
+      if (!state.active) return;
+      const mode = state.cardMode;
+      if (mode === "shown") {
+        refreshCurrentRole();
+        return;
+      }
+      if (mode === "hidden") {
+        renderRoleCard(uiTranslations.en.hiddenTitle, uiTranslations.en.hiddenSub, false, playerLabel());
+        return;
+      }
+      if (mode === "ready") {
+        renderRoleCard(uiTranslations.en.readyTitle, uiTranslations.en.readySub);
+        return;
+      }
+      // waiting or default
+      renderRoleCard(uiTranslations.en.waitingTitle, uiTranslations.en.waitingSub, false, playerLabel());
     }
 
     function translateCategories() {
@@ -859,11 +888,13 @@
     function renderMeta() {
       const baseCat = uiTranslations.en.category;
       const lang = state.translationLanguage;
+      const hasCategory = !!state.chosenCategory;
+      const rawCategory = hasCategory ? prettyName(state.chosenCategory) : "–";
       const value = state.categoryTranslationEnabled && state.translationEnabled && lang !== "en"
-        ? (state.categoryTranslations[state.chosenCategory] || prettyName(state.chosenCategory))
-        : prettyName(state.chosenCategory);
+        ? (state.categoryTranslations[state.chosenCategory] || rawCategory)
+        : rawCategory;
       const setPill = (labelText) => {
-        elements.categoryPill.textContent = state.chosenCategory
+        elements.categoryPill.textContent = hasCategory
           ? `${labelText}: ${value || "–"}`
           : `${labelText}: –`;
       };
@@ -894,6 +925,7 @@
       state.liarIndex = Math.floor(Math.random() * total) + 1;
       state.currentPlayer = 1;
       state.active = true;
+      state.cardMode = "waiting";
       renderMeta();
       renderTurnNote();
       renderRoleCard("Waiting…", "Pass the device to Player 1 and tap “Show role”.", false, playerLabel());
@@ -1002,6 +1034,7 @@
       }
       elements.revealBtn.disabled = true;
       elements.nextBtn.disabled = false;
+      state.cardMode = "shown";
     }
 
     function nextPlayer() {
@@ -1013,12 +1046,14 @@
         renderTurnNote(true);
         elements.revealBtn.disabled = true;
         elements.nextBtn.disabled = true;
+        state.cardMode = "ready";
         return;
       }
       renderRoleCard("Hidden", "Pass the device, then tap “Show role”.", false, playerLabel());
       renderTurnNote();
       elements.revealBtn.disabled = false;
       elements.nextBtn.disabled = true;
+      state.cardMode = "hidden";
     }
 
     elements.startBtn.addEventListener("click", startGame);
@@ -1027,34 +1062,7 @@
     elements.translateBtn.addEventListener("click", () => {
       const enable = !state.translationEnabled;
       setTranslationEnabled(enable);
-      const showingRole = state.active && elements.revealBtn.disabled && state.currentPlayer <= state.totalPlayers;
-      const isLiar = state.currentPlayer === state.liarIndex;
-      if (!showingRole) return;
-      const categoryText = `Category: ${prettyName(state.chosenCategory)}`;
-      const label = playerLabel();
-      if (enable) {
-        if (isLiar) {
-          renderRoleCard("Translating…", "Blend in. Listen for clues. Guess the word at the end.", true, label);
-          translateWord("You are the LIAR!", state.translationLanguage).then(translated => {
-            renderRoleCard(translated || "You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
-          }).catch(() => {
-            renderRoleCard("You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
-          });
-        } else {
-          renderRoleCard("Your word: translating…", categoryText, false, label);
-          translateWord(state.word, state.translationLanguage).then(translated => {
-            renderRoleCard(`Your word: ${translated || state.word}`, categoryText, false, label);
-          }).catch(() => {
-            renderRoleCard(`Your word: ${state.word}`, categoryText, false, label);
-          });
-        }
-      } else {
-        if (isLiar) {
-          renderRoleCard("You are the LIAR!", "Blend in. Listen for clues. Guess the word at the end.", true, label);
-        } else {
-          renderRoleCard(`Your word: ${state.word}`, categoryText, false, label);
-        }
-      }
+      refreshCardForState();
     });
     elements.translateCatsBtn.addEventListener("click", () => {
       const enable = !state.categoryTranslationEnabled;
@@ -1063,19 +1071,34 @@
     elements.langSelect.addEventListener("change", (e) => {
       setTranslationLanguage(e.target.value);
     });
-    elements.backBtn.addEventListener("click", () => {
+    function resetGame() {
       state.active = false;
       state.word = null;
       state.chosenCategory = null;
       state.liarIndex = null;
       state.currentPlayer = 1;
+      state.cardMode = "waiting";
       elements.revealBtn.disabled = true;
       elements.nextBtn.disabled = true;
+      // Force English UI when resetting; do not trigger translation calls.
+      state.translationEnabled = false;
+      state.categoryTranslationEnabled = false;
+      state.translationLanguage = "en";
+      state.categoryTranslations = {};
+      elements.translateBtn.textContent = uiTranslations.en.translateOff;
+      elements.translateCatsBtn.textContent = uiTranslations.en.translateOff;
+      elements.langSelect.value = "en";
+      applyUiTranslations();
+      renderCategoryButtons();
       renderMeta();
       renderTurnNote();
       renderRoleCard(uiTranslations.en.waitingTitle, uiTranslations.en.waitingSub, false, playerLabel());
       showScreen("setup");
-    });
+    }
+
+    // Ensure the back button always triggers the reset.
+    elements.backBtn.replaceWith(elements.backBtn.cloneNode(true));
+    document.getElementById("backBtn").addEventListener("click", resetGame);
     elements.rulesBtn.addEventListener("click", () => elements.rulesModal.classList.remove("hidden"));
     elements.rulesBackdrop.addEventListener("click", () => elements.rulesModal.classList.add("hidden"));
     elements.closeRules.addEventListener("click", () => elements.rulesModal.classList.add("hidden"));
