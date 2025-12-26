@@ -1073,7 +1073,7 @@
       elements.nextBtn.disabled = true;
       renderMeta();
       renderTurnNote();
-      renderRoleCard("Waiting…", "Tap “Start / New Word” from setup.", false, playerLabel());
+      renderRoleCard(uiTranslations.en.waitingTitle, uiTranslations.en.waitingSub, false, playerLabel());
       showScreen("setup");
     });
     elements.rulesBtn.addEventListener("click", () => elements.rulesModal.classList.remove("hidden"));
