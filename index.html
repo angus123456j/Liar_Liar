@@ -319,9 +319,9 @@
         <li data-i18n="rule3">Give one-word hints to prove you aren't the liar.</li>
         <li data-i18n="rule4">Discuss and vote to catch the imposter!</li>
       </ol>
-      <h3 style="margin-top: 20px; font-size: 18px; color: var(--accent);">Translation Helper</h3>
-      <p style="font-size: 14px; color: #666; line-height: 1.6; margin: 10px 0;">
-        Select a language from the dropdown, then tap <strong>"Translate on"</strong> to see the entire UI and secret words in that language. 
+      <h3 id="transHelperTitle" style="margin-top: 20px; font-size: 18px; color: var(--accent);">Translation Helper</h3>
+      <p id="transHelperText" style="font-size: 14px; color: #666; line-height: 1.6; margin: 10px 0;">
+        Select a language from the dropdown, then tap "Translate on" to see the entire UI and secret words in that language. 
         This helps players who prefer a different language. Toggle off anytime to return to English.
       </p>
       <button class="close-modal" id="closeRules">Got it</button>
@@ -403,8 +403,7 @@
       "Give one-word hints to prove you aren't the liar.",
       "Discuss and vote to catch the imposter!",
       "Translation Helper",
-      "Select a language from the dropdown, then tap",
-      "to see the entire UI and secret words in that language. This helps players who prefer a different language. Toggle off anytime to return to English.",
+      "Select a language from the dropdown, then tap \"Translate on\" to see the entire UI and secret words in that language. This helps players who prefer a different language. Toggle off anytime to return to English.",
       "Foods", "Fruits", "Sports", "Music", "High school subjects", "Geography",
       "Jobs", "History", "Human body", "Household", "Nature", "Animals", "Canada", "China"
     ];
@@ -479,6 +478,10 @@
       document.querySelectorAll("#rulesList li").forEach((li, i) => {
         set(li, t(baseRules[i]));
       });
+      
+      // Translation helper section
+      set(document.getElementById("transHelperTitle"), t("Translation Helper"));
+      set(document.getElementById("transHelperText"), t("Select a language from the dropdown, then tap \"Translate on\" to see the entire UI and secret words in that language. This helps players who prefer a different language. Toggle off anytime to return to English."));
       
       // Deal screen
       if (state.activeScreen === "deal") {
