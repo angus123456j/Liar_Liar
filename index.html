@@ -276,8 +276,8 @@
   <div class="container">
     <div class="topbar">
       <div>
-        <h1>Guess the Liar</h1>
-        <p class="lead">Simple pass-and-play for 3–20 players. One liar, one secret word.</p>
+        <h1 id="titleText">Guess the Liar</h1>
+        <p class="lead" id="leadText">Simple pass-and-play for 3–20 players. One liar, one secret word.</p>
       </div>
       <button id="rulesBtn" class="ghost" style="width:auto; padding:10px 14px;">Rules</button>
     </div>
@@ -286,12 +286,12 @@
       <div class="card">
         <div class="stack">
           <div>
-            <h3>Setup</h3>
-            <p class="muted" style="margin:6px 0 0;">Pick players and a category, then start.</p>
+            <h3 id="setupTitle">Setup</h3>
+            <p class="muted" id="setupHint" style="margin:6px 0 0;">Pick players and a category, then start.</p>
           </div>
           <div class="stack">
             <div class="inline spread" style="align-items:center;">
-              <label for="langSelect">Language</label>
+              <label for="langSelect" id="langLabel">Language</label>
               <select id="langSelect" style="width:auto; min-width: 200px;">
                 <option value="en">English (default)</option>
                 <option value="zh-CN">Chinese (Simplified)</option>
@@ -306,15 +306,15 @@
             </div>
           </div>
           <div class="stack">
-            <label for="playerCount">Number of players (3–20)</label>
+            <label for="playerCount" id="numberLabel">Number of players (3–20)</label>
             <div class="inline">
               <input id="playerCount" type="number" min="3" max="20" value="6" />
-              <span class="badge">Liar assigned randomly</span>
+              <span class="badge" id="liarBadge">Liar assigned randomly</span>
             </div>
           </div>
           <div class="stack">
             <div class="inline spread" style="align-items:center;">
-              <label for="categorySelect">Category</label>
+              <label for="categorySelect" id="categoryLabel">Category</label>
               <button id="translateCatsBtn" class="ghost" style="width:auto;">中 / EN</button>
             </div>
             <div class="category-grid" id="categoryGrid"></div>
@@ -337,7 +337,7 @@
             </select>
           </div>
           <button id="startBtn" style="font-size:18px; padding:16px;">Start / New Word</button>
-          <p class="muted center" style="margin:0;">Pass the device and reveal roles one at a time.</p>
+          <p class="muted center" id="startNote" style="margin:0;">Pass the device and reveal roles one at a time.</p>
         </div>
       </div>
     </section>
@@ -349,11 +349,11 @@
           <div class="pill" id="categoryPill">Category: –</div>
           <div class="pill" id="langPill">Language: English</div>
           <div class="inline" style="gap:8px; flex-wrap:nowrap;">
-            <button id="translateBtn" class="ghost" style="width:auto;">中 / EN</button>
+            <button id="translateBtn" class="ghost" style="width:auto;">Translate off</button>
           </div>
         </div>
         <div class="divider"></div>
-        <h3>Deal roles</h3>
+        <h3 id="dealTitle">Deal roles</h3>
         <p class="muted" id="turnNote">Press start to pick a word.</p>
         <div style="height: 8px;"></div>
         <div class="role-card" id="roleCard">
@@ -373,15 +373,15 @@
     <div class="modal-backdrop" id="rulesBackdrop"></div>
     <div class="modal-panel">
       <div class="inline spread" style="align-items:center;">
-        <h3 style="margin:0;">Rules</h3>
+        <h3 style="margin:0;" id="rulesTitle">Rules</h3>
         <button id="closeRules" class="ghost" style="width:auto;">✕</button>
       </div>
-      <ol class="rules-list">
-        <li>Everyone gets the secret word except one liar.</li>
-        <li>Take turns giving short hints about the word.</li>
-        <li>The liar listens, bluffs, and tries to blend in.</li>
-        <li>After a few rounds, discuss and vote who the liar is.</li>
-        <li>If the liar is caught, the group wins; if not, the liar wins — but the liar can also steal the win by guessing the word after votes.</li>
+      <ol class="rules-list" id="rulesList">
+        <li data-i18n="rule1">Everyone gets the secret word except one liar.</li>
+        <li data-i18n="rule2">Take turns giving short hints about the word.</li>
+        <li data-i18n="rule3">The liar listens, bluffs, and tries to blend in.</li>
+        <li data-i18n="rule4">After a few rounds, discuss and vote who the liar is.</li>
+        <li data-i18n="rule5">If the liar is caught, the group wins; if not, the liar wins — but the liar can also steal the win by guessing the word after votes.</li>
       </ol>
     </div>
   </div>
@@ -543,6 +543,101 @@
       categoryTranslations: {},
     };
     const translationCache = {};
+    const uiTranslations = {
+      en: {
+        title: "Guess the Liar",
+        lead: "Simple pass-and-play for 3–20 players. One liar, one secret word.",
+        setup: "Setup",
+        setupHint: "Pick players and a category, then start.",
+        numberLabel: "Number of players (3–20)",
+        liarBadge: "Liar assigned randomly",
+        category: "Category",
+        start: "Start / New Word",
+        startNote: "Pass the device and reveal roles one at a time.",
+        back: "← Setup",
+        deal: "Deal roles",
+        turnNoteIdle: "Press start to pick a word.",
+        turnNoteActive: (p, t) => `Player ${p} of ${t}: tap “Show role”, then hide and pass.`,
+        turnNoteDone: "All roles dealt. Discuss, accuse, then let the liar guess the word.",
+        translateOn: "Translate on",
+        translateOff: "Translate off",
+        rulesTitle: "Rules",
+        rule1: "Everyone gets the secret word except one liar.",
+        rule2: "Take turns giving short hints about the word.",
+        rule3: "The liar listens, bluffs, and tries to blend in.",
+        rule4: "After a few rounds, discuss and vote who the liar is.",
+        rule5: "If the liar is caught, the group wins; if not, the liar wins — but the liar can also steal the win by guessing the word after votes.",
+        languageLabel: "Language",
+        languagePill: (lang) => `Language: ${lang}`,
+      }
+    };
+
+    function applyUiTranslations() {
+      const lang = state.translationLanguage || "en";
+      const base = uiTranslations.en;
+      const isEn = lang === "en";
+      const set = (el, text) => { if (el) el.textContent = text; };
+
+      if (isEn) {
+        set(document.getElementById("titleText"), base.title);
+        set(document.getElementById("leadText"), base.lead);
+        set(document.getElementById("setupTitle"), base.setup);
+        set(document.getElementById("setupHint"), base.setupHint);
+        set(document.getElementById("numberLabel"), base.numberLabel);
+        set(document.getElementById("liarBadge"), base.liarBadge);
+        set(document.getElementById("categoryLabel"), base.category);
+        set(document.getElementById("startBtn"), base.start);
+        set(document.getElementById("startNote"), base.startNote);
+        set(document.getElementById("backBtn"), base.back);
+        set(document.getElementById("dealTitle"), base.deal);
+        set(document.getElementById("rulesTitle"), base.rulesTitle);
+        set(document.getElementById("langLabel"), base.languageLabel);
+        document.querySelectorAll("[data-i18n]").forEach(li => {
+          const key = li.getAttribute("data-i18n");
+          if (base[key]) li.textContent = base[key];
+        });
+        elements.translateBtn.textContent = state.translationEnabled ? base.translateOn : base.translateOff;
+        elements.translateCatsBtn.textContent = state.categoryTranslationEnabled ? base.translateOn : base.translateOff;
+        elements.langPill.textContent = base.languagePill(langLabel(lang));
+        renderMeta();
+        renderTurnNote(state.currentPlayer > state.totalPlayers);
+        return;
+      }
+
+      const translateAndSet = (text, el) => {
+        translateWord(text, lang).then(t => set(el, t || text)).catch(() => set(el, text));
+      };
+
+      translateAndSet(base.title, document.getElementById("titleText"));
+      translateAndSet(base.lead, document.getElementById("leadText"));
+      translateAndSet(base.setup, document.getElementById("setupTitle"));
+      translateAndSet(base.setupHint, document.getElementById("setupHint"));
+      translateAndSet(base.numberLabel, document.getElementById("numberLabel"));
+      translateAndSet(base.liarBadge, document.getElementById("liarBadge"));
+      translateAndSet(base.category, document.getElementById("categoryLabel"));
+      translateAndSet(base.start, document.getElementById("startBtn"));
+      translateAndSet(base.startNote, document.getElementById("startNote"));
+      translateAndSet(base.back, document.getElementById("backBtn"));
+      translateAndSet(base.deal, document.getElementById("dealTitle"));
+      translateAndSet(base.rulesTitle, document.getElementById("rulesTitle"));
+      translateAndSet(base.languageLabel, document.getElementById("langLabel"));
+      document.querySelectorAll("[data-i18n]").forEach(li => {
+        const key = li.getAttribute("data-i18n");
+        const text = base[key] || li.textContent;
+        translateWord(text, lang).then(t => li.textContent = t || text).catch(() => li.textContent = text);
+      });
+      const tb = state.translationEnabled ? base.translateOn : base.translateOff;
+      const tcb = state.categoryTranslationEnabled ? base.translateOn : base.translateOff;
+      translateWord(tb, lang).then(t => elements.translateBtn.textContent = t || tb).catch(() => elements.translateBtn.textContent = tb);
+      translateWord(tcb, lang).then(t => elements.translateCatsBtn.textContent = t || tcb).catch(() => elements.translateCatsBtn.textContent = tcb);
+      translateWord(base.languagePill(langLabel(lang)), lang).then(t => {
+        elements.langPill.textContent = t || base.languagePill(langLabel(lang));
+      }).catch(() => {
+        elements.langPill.textContent = base.languagePill(langLabel(lang));
+      });
+      renderMeta();
+      renderTurnNote(state.currentPlayer > state.totalPlayers);
+    }
 
     function randomFrom(array) {
       return array[Math.floor(Math.random() * array.length)];
@@ -573,13 +668,30 @@
 
     function setTranslationEnabled(on) {
       state.translationEnabled = on;
-      elements.translateBtn.textContent = on ? "Translate on" : "Translate off";
+      const base = uiTranslations.en;
+      const text = on ? base.translateOn : base.translateOff;
+      if (state.translationLanguage === "en") {
+        elements.translateBtn.textContent = text;
+      } else {
+        translateWord(text, state.translationLanguage).then(t => {
+          elements.translateBtn.textContent = t || text;
+        }).catch(() => elements.translateBtn.textContent = text);
+      }
       refreshCurrentRole();
+      applyUiTranslations();
     }
 
     function setCategoryTranslationEnabled(on) {
       state.categoryTranslationEnabled = on;
-      elements.translateCatsBtn.textContent = on ? "Translate on" : "Translate off";
+      const base = uiTranslations.en;
+      const text = on ? base.translateOn : base.translateOff;
+      if (state.translationLanguage === "en") {
+        elements.translateCatsBtn.textContent = text;
+      } else {
+        translateWord(text, state.translationLanguage).then(t => {
+          elements.translateCatsBtn.textContent = t || text;
+        }).catch(() => elements.translateCatsBtn.textContent = text);
+      }
       if (!on || state.translationLanguage === "en") {
         state.categoryTranslations = {};
         renderCategoryButtons();
@@ -590,13 +702,14 @@
 
     function setTranslationLanguage(lang) {
       state.translationLanguage = lang || "en";
-      elements.langPill.textContent = `Language: ${langLabel(state.translationLanguage)}`;
+      elements.langPill.textContent = uiTranslations.en.languagePill(langLabel(state.translationLanguage));
       if (state.categoryTranslationEnabled && state.translationLanguage !== "en") {
         translateCategories();
       } else {
         state.categoryTranslations = {};
         renderCategoryButtons();
       }
+      applyUiTranslations();
       refreshCurrentRole();
     }
 
@@ -730,10 +843,29 @@
     }
 
     function renderMeta() {
-      elements.categoryPill.textContent = state.chosenCategory
-        ? `Category: ${prettyName(state.chosenCategory)}`
-        : "Category: –";
-      elements.langPill.textContent = `Language: ${langLabel(state.translationLanguage)}`;
+      const baseCat = uiTranslations.en.category;
+      const lang = state.translationLanguage;
+      const catLabel = (state.categoryTranslationEnabled && lang !== "en" && state.categoryTranslations[state.chosenCategory])
+        ? state.categoryTranslations[state.chosenCategory]
+        : baseCat;
+      const value = state.categoryTranslationEnabled && lang !== "en"
+        ? (state.categoryTranslations[state.chosenCategory] || prettyName(state.chosenCategory))
+        : prettyName(state.chosenCategory);
+      const setPill = (labelText) => {
+        elements.categoryPill.textContent = state.chosenCategory
+          ? `${labelText}: ${value || "–"}`
+          : `${labelText}: –`;
+      };
+      if (lang === "en") {
+        setPill(catLabel);
+      } else {
+        translateWord(baseCat, lang).then(t => setPill(t || baseCat)).catch(() => setPill(baseCat));
+      }
+      translateWord(uiTranslations.en.languagePill(langLabel(lang)), lang).then(t => {
+        elements.langPill.textContent = t || uiTranslations.en.languagePill(langLabel(lang));
+      }).catch(() => {
+        elements.langPill.textContent = uiTranslations.en.languagePill(langLabel(lang));
+      });
     }
 
     function startGame() {
@@ -760,13 +892,34 @@
 
     function renderTurnNote(done = false) {
       if (!state.active) {
-        elements.turnNote.textContent = "Press start to pick a word.";
+        const base = uiTranslations.en.turnNoteIdle;
+        if (state.translationLanguage !== "en") {
+          translateWord(base, state.translationLanguage).then(t => {
+            elements.turnNote.textContent = t || base;
+          }).catch(() => elements.turnNote.textContent = base);
+        } else {
+          elements.turnNote.textContent = base;
+        }
         return;
       }
       if (done) {
-        elements.turnNote.textContent = "All roles dealt. Discuss, accuse, then let the liar guess the word.";
+        const base = uiTranslations.en.turnNoteDone;
+        if (state.translationLanguage !== "en") {
+          translateWord(base, state.translationLanguage).then(t => {
+            elements.turnNote.textContent = t || base;
+          }).catch(() => elements.turnNote.textContent = base);
+        } else {
+          elements.turnNote.textContent = base;
+        }
       } else {
-        elements.turnNote.textContent = `Player ${state.currentPlayer} of ${state.totalPlayers}: tap “Show role”, then hide and pass.`;
+        const base = uiTranslations.en.turnNoteActive(state.currentPlayer, state.totalPlayers);
+        if (state.translationLanguage !== "en") {
+          translateWord(base, state.translationLanguage).then(t => {
+            elements.turnNote.textContent = t || base;
+          }).catch(() => elements.turnNote.textContent = base);
+        } else {
+          elements.turnNote.textContent = base;
+        }
       }
     }
 
@@ -927,6 +1080,7 @@
     setTranslationEnabled(false);
     setCategoryTranslationEnabled(false);
     setTranslationLanguage("en");
+    applyUiTranslations();
     renderMeta();
     renderTurnNote();
     elements.revealBtn.disabled = true;
