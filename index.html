@@ -118,21 +118,26 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 14px;
-      font-size: 13px;
+      padding: 10px;
+      font-size: 12px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: 0 4px 12px rgba(0,0,0,0.03);
       color: #333;
-      line-height: 1.2;
+      line-height: 1.15;
+      overflow: hidden;
+      word-break: break-word;
+      hyphens: auto;
+      max-width: 100%;
+      min-width: 0;
     }
     .category-tile.active {
       border: 3.5px solid #000;
       transform: scale(1.15);
       z-index: 10;
       box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-      font-size: 14px;
+      font-size: 12px;
       background: white;
     }
     .main-btn {
@@ -241,8 +246,8 @@
 
     @media (max-width: 480px) {
       .app-frame { padding: 35px 20px; border-radius: 40px; min-height: 650px; }
-      .category-grid { gap: 12px; }
-      .category-tile { font-size: 12px; }
+      .category-grid { gap: 10px; }
+      .category-tile { font-size: 11px; padding: 8px; }
       .deal-card { width: 260px; height: 260px; }
       .role-text { font-size: 28px; }
       .more-btn { width: 26px; height: 26px; font-size: 14px; top: 30px; right: 20px; }
