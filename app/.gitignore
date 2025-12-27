@@ -1,0 +1,12 @@
+# Android / Gradle
+.gradle/
+.idea/
+local.properties
+/build/
+app/build/
+
+# APK / AAB outputs
+*.apk
+*.aab
+*.dm
+output-metadata.json
